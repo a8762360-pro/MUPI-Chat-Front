@@ -23,6 +23,9 @@ const Chating = () => {
     // Chat Data Load
     const fetchGroupData = () => {
         if (!groupName) return;
+        setMessages([]);
+        setMembers([]);
+        // setPhoto([]);
 
         axios.get(`http://localhost:3000/allGroups/${encodeURIComponent(groupName)}`)
             .then(res => {
@@ -32,6 +35,9 @@ const Chating = () => {
                 setPhoto(groupAllData.imageName || groupAllData.photo || "");
             })
             .catch(err => console.error("Error loading chat group data:", err));
+        setMessages([]);
+        setMembers([]);
+        // setPhoto([]);
     };
 
     useEffect(() => {
@@ -72,7 +78,7 @@ const Chating = () => {
     // Direct Add Member from List
     const handleDirectAddMember = (user) => {
         if (!user) return;
-    
+
         axios.post(`http://localhost:3000/allGroups/${encodeURIComponent(groupName)}/members`, {
             newMember: {
                 name: user.name,
@@ -82,11 +88,11 @@ const Chating = () => {
             },
             groupName: groupName
         })
-        .then(() => {
-            alert("Member added successfully!");
-            fetchGroupData(); // ডাটা রিফ্রেশ করা
-        })
-        .catch(err => console.error("Failed to add member:", err));
+            .then(() => {
+                alert("Member added successfully!");
+                fetchGroupData(); // ডাটা রিফ্রেশ করা
+            })
+            .catch(err => console.error("Failed to add member:", err));
     };
 
     // Update Group Icon Photo URL
@@ -121,7 +127,7 @@ const Chating = () => {
     };
 
     return (
-        <div className="flex flex-col h-screen max-h-screen overflow-hidden bg-slate-100 border-l border-slate-200">
+        <div className="flex flex-col h-165 max-h-screen overflow-hidden bg-slate-100 border-l border-slate-200">
 
             {/* ---------- Header ---------- */}
             <div className="shrink-0 flex items-center justify-between px-6 py-3.5 bg-white border-b border-slate-200 shadow-sm z-10">

@@ -37,28 +37,25 @@ const Navbar = () => {
         };
         console.log(newGroupData.name)
 
-        // ব্যাকএন্ডে গ্রুপ ডাটা পোস্ট
         axios.post('http://localhost:3000/allGroups', newGroupData)
             .then(res => {
                 console.log("Group created:", res.data);
-                // ইনপুট রিসেট
                 setGroupName('');
-                // মোডাল বন্ধ করা
                 document.getElementById('my_modal_3').close();
+                axios.patch('http://localhost:3000/users/join-group', {
+                    email: user?.email,
+                    groupName: newGroupData.name
+                })
+                    .then(res => {
+                        console.log("Joined Group:", res.data);
+                        window.location.reload(); // 🟢 Automatic page reload hobe
+                    })
+                    .catch(err => {
+                        console.error("Failed to join group:", err);
+                    });
             })
             .catch(err => {
                 console.error("Error creating group:", err);
-            });
-
-        axios.patch('http://localhost:3000/users/join-group', {
-            email: user?.email,
-            groupName: newGroupData.name
-        })
-            .then(res => {
-                console.log("Joined Group:", res.data);
-            })
-            .catch(err => {
-                console.error("Failed to join group:", err);
             });
     };
 
@@ -163,10 +160,12 @@ const Navbar = () => {
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
                                     >
                                         <option value="Computer Science & Technology">Computer Science & Technology (CST)</option>
-                                        <option value="Electrical Technology">Electrical Technology</option>
-                                        <option value="Electronics Technology">Electronics Technology</option>
-                                        <option value="Mechanical Technology">Mechanical Technology</option>
-                                        <option value="Civil Technology">Civil Technology</option>
+                                        <option value="Civil Technology">Civil Technology (CT)</option>
+                                        <option value="Electrical Technology">Electrical Technology (ET)</option>
+                                        <option value="Electronics Technology">Electronics Technology (EnT)</option>
+                                        <option value="Mechanical Technology">Mechanical Technology (MT)</option>
+                                        <option value="Electromedical Technology">Electromedical Technology (EMT)</option>
+                                        <option value="Refrigeration and Air Conditioning Technology">Refrigeration and Air Conditioning (RAC)</option>
                                     </select>
                                 </div>
 
