@@ -86,21 +86,8 @@ const Login = () => {
                     <p className="mt-1 text-stone-500">আপনার institute account দিয়ে ঢুকুন।</p>
 
                     <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
-                        {/* Role toggle */}
-                        <div className="grid grid-cols-2 gap-1 rounded-xl bg-stone-200 p-1">
-                            {roles.map(({ key, label, icon: Icon }) => (
-                                <button
-                                    key={key}
-                                    type="button"
-                                    onClick={() => setRole(key)}
-                                    className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${role === key ? "bg-white text-emerald-900 shadow-sm" : "text-stone-500 hover:text-stone-700"
-                                        }`}
-                                >
-                                    <Icon size={16} />
-                                    {label}
-                                </button>
-                            ))}
-                        </div>
+                        
+                        
 
                         {/* ID */}
                         <div>
@@ -128,8 +115,7 @@ const Login = () => {
                                     id="password"
                                     name="password"
                                     type="password"
-
-
+                                    placeholder="Enter your right password"
                                     className="w-full rounded-xl border border-stone-300 bg-white py-3 pl-4 pr-12 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/20"
                                 />
                                 <button
@@ -141,11 +127,7 @@ const Login = () => {
                             </div>
                         </div>
 
-                        {/* Remember */}
-                        <label className="flex cursor-pointer items-center gap-2 text-sm text-stone-600">
-                            <input type="checkbox" className="h-4 w-4 rounded border-stone-300 accent-emerald-800" />
-                            আমাকে মনে রাখুন
-                        </label>
+                        
 
                         {error && (
                             <p role="alert" className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
@@ -163,7 +145,7 @@ const Login = () => {
                     </form>
 
                     <p className="mt-8 text-center text-sm text-stone-500">
-                        নতুন student?{" "}
+                        নতুন User?{" "}
                         <NavLink to="/register" className="font-semibold text-emerald-800 hover:underline">
                             Account খুলুন
                         </NavLink>

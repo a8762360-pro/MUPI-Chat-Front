@@ -10,9 +10,9 @@ const Navbar = () => {
     const { user } = UseAuth();
     const axiosSeceure = useAxiosSecure();
 
-    const [groupName, setGroupName] = useState('');
-    const [department, setDepartment] = useState('Computer Science & Technology');
-    const [semester, setSemester] = useState('1st');
+    const [ groupName, setGroupName ] = useState('');
+    const [ department, setDepartment ] = useState('Computer Science & Technology');
+    const [ semester, setSemester ] = useState('1st');
 
     const handleCreateGroup = (e) => {
         e.preventDefault();
@@ -25,13 +25,13 @@ const Navbar = () => {
             photo: e.target.groupPhoto.value,
             department: user?.role === 'student' ? department : '',
             semester: user?.role === 'student' ? semester : '',
-            themeImage: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
+            themeImage: "https://imgs.search.brave.com/75vDDI-ZoInfBwXdKm1yfPnlqy6Hptk92a_eyRsx2VM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNjcv/MzY3Lzg1NC9zbWFs/bC9zb2Z0LWNoYW9z/LW9mLWNvbG9ycy1p/bi1kaWdpdGFsLXdh/dGVyY29sb3ItYmFj/a2dyb3VuZC1hYnN0/cmFjdC10aGVtZS1m/cmVlLXZlY3Rvci5q/cGc",
             members: [
                 {
                     name: user?.name || "",
                     email: user?.email || "",
                     role: 'admin',
-                    image: user?.imageName || "",
+                    imageName: user?.imageName || "",
                 }
             ],
             messages: [],
@@ -39,7 +39,7 @@ const Navbar = () => {
         };
         console.log(newGroupData.name);
 
-        axiosSeceure.post('http://localhost:3000/allGroups', newGroupData)
+        axiosSeceure.post('/allGroups', newGroupData)
             .then(res => {
                 toast.success('Group created successfully!', {
                     position: "top-center",
@@ -54,18 +54,7 @@ const Navbar = () => {
                 });
                 setGroupName('');
                 document.getElementById('my_modal_3').close();
-                
-                axiosSeceure.patch('http://localhost:3000/users/join-group', {
-                    email: user?.email,
-                    groupName: newGroupData.name
-                })
-                    .then(res => {
-                        console.log("Joined Group:", res.data);
-                        window.location.reload(); 
-                    })
-                    .catch(err => {
-                        console.error("Failed to join group:", err);
-                    });
+                window.location.reload();
             })
             .catch(err => {
                 console.error("Error creating group:", err);
@@ -73,7 +62,7 @@ const Navbar = () => {
     };
 
     return (
-        <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+        <header className="border-b border-slate-200 bg-slate-50 backdrop-blur-sm sticky top-0 z-50">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
 
                 {/* Logo & Title */}
@@ -148,7 +137,7 @@ const Navbar = () => {
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 placeholder:text-slate-400"
                                     />
                                 </div>
-                                
+
                                 {/* Group photo */}
                                 <div>
                                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
@@ -163,7 +152,7 @@ const Navbar = () => {
                                     />
                                 </div>
 
-                                {/* 🟢 যদি ইউজার Student হয়, তবেই কেবল Department এবং Semester ফিল্ড দেখাবে */}
+                                {/*  যদি ইউজার Student হয়, তবেই কেবল Department এবং Semester ফিল্ড দেখাবে */}
                                 {user?.role === "student" && (
                                     <>
                                         {/* Department */}

@@ -9,7 +9,7 @@ import useAxiosSecure from '../../Hook/UseAxiosSeceure';
 const Chating = () => {
     const axiosSeceure = useAxiosSecure();
     const { user } = UseAuth();
-    const { id: rawGroupID } = useParams();
+    const { groupId: rawGroupID } = useParams();
     const groupID = decodeURIComponent(rawGroupID || "");
 
     const [ messages, setMessages ] = useState([]);
@@ -31,7 +31,7 @@ const Chating = () => {
         setMessages([]);
         setMembers([]);
 
-        axiosSeceure.get(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}`)
+        axiosSeceure.get(`/allGroups/${encodeURIComponent(groupID)}`)
             .then(res => {
                 const groupAllData = res.data;
                 setTheme(groupAllData.bgImage || groupAllData.themeImage || "");
@@ -45,7 +45,7 @@ const Chating = () => {
 
     useEffect(() => {
         fetchGroupData();
-        axiosSeceure.get("http://localhost:3000/users")
+        axiosSeceure.get("/users")
             .then(res => {
                 setAllPeople(res.data || []);
             })
@@ -74,15 +74,14 @@ const Chating = () => {
         setMessages((prevSms) => [ ...prevSms, newMessage ]);
         setInputText("");
 
-        axiosSeceure.post(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}/messages`, newMessage)
+        axiosSeceure.post(`/allGroups/${encodeURIComponent(groupID)}/messages`, newMessage)
             .catch(err => console.error("Failed to save message:", err));
     };
 
     // Direct Add Member from List
     const handleDirectAddMember = (targetUser) => {
         if (!targetUser) return;
-
-        axiosSeceure.post(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}/members`, {
+        axiosSeceure.post(`/allGroups/${encodeURIComponent(groupID)}/members`, {
             newMember: {
                 name: targetUser.name,
                 email: targetUser.email,
@@ -93,6 +92,7 @@ const Chating = () => {
         })
             .then(() => {
                 toast.success("Member added successfully!");
+                
                 fetchGroupData();
             })
             .catch(err => console.error("Failed to add member:", err));
@@ -103,7 +103,7 @@ const Chating = () => {
         e.preventDefault();
         if (!newPhotoUrl.trim()) return;
 
-        axiosSeceure.patch(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}/photo`, {
+        axiosSeceure.patch(`/allGroups/${encodeURIComponent(groupID)}/photo`, {
             photoUrl: newPhotoUrl.trim()
         })
             .then(() => {
@@ -116,7 +116,7 @@ const Chating = () => {
 
     //  Update Chat Theme Background Image
     const handleUpdateThemeImage = (imgUrl) => {
-        axiosSeceure.patch(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}/bgImage`, {
+        axiosSeceure.patch(`/allGroups/${encodeURIComponent(groupID)}/bgImage`, {
             bgImage: imgUrl
         })
             .then(() => {
@@ -138,7 +138,7 @@ const Chating = () => {
         if (imgName.startsWith("http://") || imgName.startsWith("https://")) {
             return imgName;
         }
-        return `http://localhost:3000/uploads/${imgName}`;
+        return `/uploads/${imgName}`;
     };
 
     // bg themes wallpaper image
@@ -148,7 +148,7 @@ const Chating = () => {
         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
         "https://images.unsplash.com/photo-1550684848-fac1c5b4e853",
         "https://imgs.search.brave.com/lkLvn82EBqM8ozrOgu2fWxACaT4rUgsXRBRwhOhwdPc/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMTcv/MDQ2LzczMy9zbWFs/bC9zcGVjaWFsLWhl/YXJ0LWJhY2tncm91/bmQtZm9yLXZhbGVu/dGluZS1kYXktd2l0/aC13aGl0ZS1jbG91/ZC1hbmQtdXNlZC13/aXRoLXNpbWlsYXIt/dGhlbWUtdmVjdG9y/LmpwZw",
-        "https://imgs.search.brave.com/75vDDI-ZoInfBwXdKm1yfPnlqy6Hptk92a_eyRsx2VM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNjcv/MzY3Lzg1NC9zbWFs/bC9zb2Z0LWNoYW9z/LW9mLWNvbG9ycy1p/bi1kaWdpdGFsLXdh/dGVyY29sb3ItYmFj/a2dyb3VuZC1hYnN0/cmFjdC10aGVtZS1m/cmVlLXZlY3Rvci5q/cGc",
+        "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
         "https://imgs.search.brave.com/2uAWTkdWJPV-VqxReN0zYxzT6RYk_cmEhn7520AgCXk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNTEv/MTQ5LzU1NC9zbWFs/bC9oYW5kLXBhaW50/ZWQtd2ludGVyLXRo/ZW1lZC1mbG9yYWwt/d2F0ZXJjb2xvdXIt/YmFja2dyb3VuZC1m/cmVlLXZlY3Rvci5q/cGc",
         "https://imgs.search.brave.com/oKzKnAr1VyP3Eus-5DSwHpJJiuKMLWcrkSP2RzugGpg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/bWFnbmlmaWMuY29t/L2ZyZWUtdmVjdG9y/L3dhdGVyY29sb3It/YmFja2dyb3VuZC10/aGVtZV8yMy0yMTQ4/ODI1NzgxLmpwZz9z/ZW10PWFpc19oeWJy/aWQmdz03NDAmcT04/MA",
 
@@ -159,13 +159,13 @@ const Chating = () => {
             style={{
                 backgroundImage: theme ? `url(${theme})` : 'none'
             }}
-            className="flex flex-col bg-center bg-cover h-165 max-h-screen overflow-hidden bg-slate-100 border-l border-slate-200 relative"
+            className="flex flex-col bg-center bg-cover h-165 border-b max-h-screen overflow-hidden border-l border-slate-200 relative"
         >
             {/* ব্যাকগ্রাউন্ড ইমেজের ওপর হালকা ওভারলে যাতে চ্যাটের লেখাগুলো পরিষ্কার দেখা যায় */}
             {theme && <div className="absolute inset-0 bg-black/20 pointer-events-none" />}
 
             {/* ---------- Header ---------- */}
-            <div className="shrink-0 flex items-center justify-between px-6 py-3.5 bg-white border-b border-slate-200 shadow-sm z-10">
+            <div className="shrink-0 bg-slate-50 flex items-center justify-between px-6 py-3.5 border-b border-slate-200 shadow-sm z-10">
                 <div className="flex items-center gap-3">
                     <div className="w-11 h-11 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200 shadow-sm shrink-0">
                         {photo ? (
@@ -242,12 +242,12 @@ const Chating = () => {
             </div>
 
             {/* ---------- Input Footer ---------- */}
-            <form onSubmit={handleSend} className="shrink-0 p-4 bg-white border-t border-slate-200 flex items-center gap-2 relative z-10 shadow-md">
+            <form onSubmit={handleSend} className="shrink-0 p-4 bg-slate-50 border-t border-slate-200 flex items-center gap-2 relative z-10 shadow-md">
                 <button
                     type="button"
-                    className="p-2.5 text-slate-400 hover:text-indigo-600 rounded-full hover:bg-slate-100 transition-colors"
+                    className="p-2.5 text-slate-400 hover:text-indigo-600  rounded-full  transition-colors"
                 >
-                    <FiPaperclip className="w-5 h-5" />
+                    <FiPaperclip className="w-10 h-10  rounded-4xl p-2 hover:bg-blue-600 hover:text-white" />
                 </button>
 
                 <input
@@ -255,7 +255,7 @@ const Chating = () => {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Write a message..."
-                    className="flex-1 px-4 py-2.5 bg-slate-100 border border-transparent rounded-xl text-sm focus:outline-none focus:bg-white focus:border-indigo-500 transition-all text-slate-800 placeholder-slate-400"
+                    className="flex-1 px-4 py-2.5 bg-white  border border-gray-300 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-indigo-500 transition-all text-slate-800 placeholder-slate-400"
                 />
 
                 <button
@@ -275,7 +275,7 @@ const Chating = () => {
                 <div className="modal-box bg-white p-6 scrollbar-none rounded-3xl shadow-2xl max-w-md text-slate-800">
 
                     <form method="dialog">
-                        <button className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-slate-400 hover:text-slate-600">
+                        <button className="btn border-none btn-sm btn-circle btn-ghost absolute right-4 top-4 text-slate-400 hover:bg-red-600 hover:text-white">
                             <FiX size={18} />
                         </button>
                     </form>

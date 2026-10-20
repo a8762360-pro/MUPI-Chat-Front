@@ -4,7 +4,7 @@ import { FaGraduationCap, FaChalkboardTeacher } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router";
 import { AuthContext } from "../AuthContext/AuthContext";
 import axios from "axios";
-import { Group } from "lucide-react";
+import { toast } from "react-toastify"; // 🟢 react-toastify ইমপোর্ট করা হলো
 
 const DEPARTMENTS = [
     "Computer Science & Technology",
@@ -43,14 +43,16 @@ const Register = () => {
         setError("");
 
         if (!agree) {
-            setError("Obosshoi niyamabolite sommot hon.");
+            const errMsg = "Obosshoi niyamabolite sommot hon.";
+            setError(errMsg);
+            toast.error(errMsg); // 🟢 টোস্ট নোটিফিকেশন
             return;
         }
 
         const role = status;
         const name = e.target.name.value;
         const idCard = e.target.id.value;
-        const image = e.target.image.value; // File Object
+        const image = e.target.image.value;
         const department = e.target.department.value;
         const semester = status === "student" ? e.target.semester?.value : "";
         const email = e.target.email.value;
@@ -58,7 +60,9 @@ const Register = () => {
         const confirmpassword = e.target.confirm.value;
 
         if (password !== confirmpassword) {
-            setError("Password no matching");
+            const errMsg = "Password no matching";
+            setError(errMsg);
+            toast.error(errMsg); // 🟢 টোস্ট নোটিফিকেশন
             return;
         }
 
@@ -71,11 +75,7 @@ const Register = () => {
             imageName: image,
             department,
             semester,
-            group: [
-                
-            ]
         };
-        console.log(newUserData)
 
         // create account firebase
         createUser(email, password)
@@ -83,33 +83,38 @@ const Register = () => {
                 const user = res.user;
 
                 if (user) {
-                    alert("Firebase account created successfully!");
-                    // Firebase-এর UID অবজেক্টে যুক্ত করা
+                    // 🟢 সফলভাবে ফায়ারবেস অ্যাকাউন্ট খোলার পর টোস্ট
+                    toast.success("Firebase account created successfully!");
+
                     const userFullData = {
-                        ...newUserData,
                         uid: user.uid,
+                        ...newUserData,
                         createdAt: new Date()
                     };
+
                     // send user data to database
                     axios.post("http://localhost:3000/users", userFullData)
                         .then(dbRes => {
-                            alert("Your data was successfully submitted to the database!");
+                            // 🟢 ডাটাবেজে সফলভাবে সেভ হওয়ার পর টোস্ট
+                            toast.success("Your data was successfully submitted to the database!");
                             e.target.reset();
                             setAgree(false);
                             navigate("/inbox");
                         })
                         .catch(err => {
                             console.error("Database Save Error:", err);
-                            setError("Failed to save user in database: " + err.message);
+                            const errMsg = "Failed to save user in database: " + err.message;
+                            setError(errMsg);
+                            toast.error(errMsg); // 🟢 ডাটাবেজ এরর টোস্ট
                         });
                 }
             })
             .catch(err => {
                 console.error("Firebase Auth Error:", err);
-                setError("Firebase account creation failed: " + err.message);
+                const errMsg = "Firebase account creation failed: " + err.message;
+                setError(errMsg);
+                toast.error(errMsg); // 🟢 ফায়ারবেস এরর টোস্ট
             });
-
-
     };
 
     const roles = [
@@ -174,7 +179,6 @@ const Register = () => {
                     <form onSubmit={handleSubmit} className="mt-8 space-y-4" >
                         {/* Role toggle */}
                         <div className="grid grid-cols-2 gap-1 rounded-xl bg-stone-200 p-1">
-                            {/* FIX: status.map -> roles.map */}
                             {roles.map(({ key, label, icon: Icon }) => (
                                 <button
                                     key={key}
@@ -198,13 +202,12 @@ const Register = () => {
                         </Field>
 
                         <Field label="Image" id="image">
-                            <input type="text" placeholder="Ente your photo URL" required id="image" name="image" className={inputCls} />
+                            <input type="text" placeholder="Enter your photo URL" required id="image" name="image" className={inputCls} />
                         </Field>
 
                         <div className={`grid gap-4 ${status === "student" ? "sm:grid-cols-2" : ""}`}>
                             <Field label="Department" id="department">
                                 <select id="department" name="department" className={inputCls}>
-                                    <option value="">Select</option>
                                     {DEPARTMENTS.map((d) => (
                                         <option key={d} value={d}>{d}</option>
                                     ))}
@@ -214,7 +217,6 @@ const Register = () => {
                             {status === "student" && (
                                 <Field label="Semester" id="semester">
                                     <select id="semester" name="semester" className={inputCls}>
-                                        <option value="">Select</option>
                                         {SEMESTERS.map((s) => (
                                             <option key={s} value={s}>{s} Semester</option>
                                         ))}
@@ -250,7 +252,7 @@ const Register = () => {
                                 </div>
                             </Field>
 
-                            <Field label="Password আবার" id="confirm">
+                            <Field label="Confirm password " id="confirm">
                                 <input
                                     required
                                     id="confirm"

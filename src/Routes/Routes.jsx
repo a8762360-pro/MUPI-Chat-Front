@@ -41,7 +41,7 @@ export const router = createBrowserRouter([
                 </PrivateRoutes>
             },
             {
-                path: "chating/:id",
+                path: "chating/:groupId",
                 element: <PrivateRoutes>
                     <Chating></Chating>
                 </PrivateRoutes>
