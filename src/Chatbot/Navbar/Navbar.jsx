@@ -3,14 +3,16 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router';
 import axios from 'axios';
 import UseAuth from '../../Hook/UseAuth';
+import { Bounce, toast, ToastContainer } from 'react-toastify';
+import useAxiosSecure from '../../Hook/UseAxiosSeceure';
 
 const Navbar = () => {
     const { user } = UseAuth();
+    const axiosSeceure = useAxiosSecure();
 
-    // ফর্মে ডাটা স্টেট
-    const [ groupName, setGroupName ] = useState('');
-    const [ department, setDepartment ] = useState('Computer Science & Technology');
-    const [ semester, setSemester ] = useState('1st');
+    const [groupName, setGroupName] = useState('');
+    const [department, setDepartment] = useState('Computer Science & Technology');
+    const [semester, setSemester] = useState('1st');
 
     const handleCreateGroup = (e) => {
         e.preventDefault();
@@ -21,34 +23,45 @@ const Navbar = () => {
             groupId: `grp_${Date.now()}`,
             name: groupName.trim(),
             photo: e.target.groupPhoto.value,
-            department: department,
-            semester: semester,
-            totalMembers: 1,
+            department: user?.role === 'student' ? department : '',
+            semester: user?.role === 'student' ? semester : '',
+            themeImage: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
             members: [
                 {
-                    uid: user?.uid || '',
-                    name: user?.displayName || user?.email?.split('@')[ 0 ] || 'User',
-                    email: user?.email,
-                    role: 'admin'
+                    name: user?.name || "",
+                    email: user?.email || "",
+                    role: 'admin',
+                    image: user?.imageName || "",
                 }
             ],
             messages: [],
             createdAt: new Date().toISOString()
         };
-        console.log(newGroupData.name)
+        console.log(newGroupData.name);
 
-        axios.post('http://localhost:3000/allGroups', newGroupData)
+        axiosSeceure.post('http://localhost:3000/allGroups', newGroupData)
             .then(res => {
-                console.log("Group created:", res.data);
+                toast.success('Group created successfully!', {
+                    position: "top-center",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: false,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "light",
+                    transition: Bounce,
+                });
                 setGroupName('');
                 document.getElementById('my_modal_3').close();
-                axios.patch('http://localhost:3000/users/join-group', {
+                
+                axiosSeceure.patch('http://localhost:3000/users/join-group', {
                     email: user?.email,
                     groupName: newGroupData.name
                 })
                     .then(res => {
                         console.log("Joined Group:", res.data);
-                        window.location.reload(); // 🟢 Automatic page reload hobe
+                        window.location.reload(); 
                     })
                     .catch(err => {
                         console.error("Failed to join group:", err);
@@ -131,10 +144,11 @@ const Navbar = () => {
                                         required
                                         value={groupName}
                                         onChange={(e) => setGroupName(e.target.value)}
-                                        placeholder="e.g. Computer 4th Semester"
+                                        placeholder="Enter the group name"
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 placeholder:text-slate-400"
                                     />
                                 </div>
+                                
                                 {/* Group photo */}
                                 <div>
                                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
@@ -144,51 +158,56 @@ const Navbar = () => {
                                         type="text"
                                         required
                                         name='groupPhoto'
-                                        placeholder="photo"
+                                        placeholder="Enter the group photo URL"
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 placeholder:text-slate-400"
                                     />
                                 </div>
 
-                                {/* Department */}
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                                        Department
-                                    </label>
-                                    <select
-                                        value={department}
-                                        onChange={(e) => setDepartment(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                                    >
-                                        <option value="Computer Science & Technology">Computer Science & Technology (CST)</option>
-                                        <option value="Civil Technology">Civil Technology (CT)</option>
-                                        <option value="Electrical Technology">Electrical Technology (ET)</option>
-                                        <option value="Electronics Technology">Electronics Technology (EnT)</option>
-                                        <option value="Mechanical Technology">Mechanical Technology (MT)</option>
-                                        <option value="Electromedical Technology">Electromedical Technology (EMT)</option>
-                                        <option value="Refrigeration and Air Conditioning Technology">Refrigeration and Air Conditioning (RAC)</option>
-                                    </select>
-                                </div>
+                                {/* 🟢 যদি ইউজার Student হয়, তবেই কেবল Department এবং Semester ফিল্ড দেখাবে */}
+                                {user?.role === "student" && (
+                                    <>
+                                        {/* Department */}
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                                                Department
+                                            </label>
+                                            <select
+                                                value={department}
+                                                onChange={(e) => setDepartment(e.target.value)}
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                                            >
+                                                <option value="Computer Science & Technology">Computer Science & Technology (CST)</option>
+                                                <option value="Civil Technology">Civil Technology (CT)</option>
+                                                <option value="Electrical Technology">Electrical Technology (ET)</option>
+                                                <option value="Electronics Technology">Electronics Technology (EnT)</option>
+                                                <option value="Mechanical Technology">Mechanical Technology (MT)</option>
+                                                <option value="Electromedical Technology">Electromedical Technology (EMT)</option>
+                                                <option value="Refrigeration and Air Conditioning Technology">Refrigeration and Air Conditioning (RAC)</option>
+                                            </select>
+                                        </div>
 
-                                {/* Semester */}
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                                        Semester
-                                    </label>
-                                    <select
-                                        value={semester}
-                                        onChange={(e) => setSemester(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-                                    >
-                                        <option value="1st">1st Semester</option>
-                                        <option value="2nd">2nd Semester</option>
-                                        <option value="3rd">3rd Semester</option>
-                                        <option value="4th">4th Semester</option>
-                                        <option value="5th">5th Semester</option>
-                                        <option value="6th">6th Semester</option>
-                                        <option value="7th">7th Semester</option>
-                                        <option value="8th">8th Semester</option>
-                                    </select>
-                                </div>
+                                        {/* Semester */}
+                                        <div>
+                                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                                                Semester
+                                            </label>
+                                            <select
+                                                value={semester}
+                                                onChange={(e) => setSemester(e.target.value)}
+                                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+                                            >
+                                                <option value="1st">1st Semester</option>
+                                                <option value="2nd">2nd Semester</option>
+                                                <option value="3rd">3rd Semester</option>
+                                                <option value="4th">4th Semester</option>
+                                                <option value="5th">5th Semester</option>
+                                                <option value="6th">6th Semester</option>
+                                                <option value="7th">7th Semester</option>
+                                                <option value="8th">8th Semester</option>
+                                            </select>
+                                        </div>
+                                    </>
+                                )}
 
                                 {/* Submit Button */}
                                 <div className="pt-2">
@@ -205,6 +224,19 @@ const Navbar = () => {
                     </dialog>
                 </div>
             </div>
+            <ToastContainer
+                position="top-center"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick={false}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Bounce}
+            />
         </header>
     );
 };

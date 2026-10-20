@@ -7,6 +7,7 @@ import { auth } from '../Firebase/Firebase';
 const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState("");
+    console.log(token)
     const [loading, setLoading] = useState(true);
 
     const createUser = (email, password) => {
@@ -46,7 +47,6 @@ const AuthProvider = ({ children }) => {
                     // যদি DB-তে না পাওয়া যায়, তবে ব্যাকআপ হিসেবে Firebase user রাখা
                     setUser(currentUser); 
                 } finally {
-                    // 🟢 ডাটাবেজ থেকে ফেচ হওয়া শেষ হলে তারপর setLoading false করতে হবে
                     setLoading(false); 
                 }
             } else {

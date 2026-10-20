@@ -3,22 +3,24 @@ import { Search } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router';
 import UseAuth from '../../Hook/UseAuth';
+import useAxiosSecure from '../../Hook/UseAxiosSeceure';
 
 const Inbox = () => {
     const { user } = UseAuth();
-    const [group, setGroup] = useState([]);
+    const [ groups, setGroups ] = useState([]);
+    const axiosSeceure = useAxiosSecure()
 
     useEffect(() => {
         if (!user?.email) return;
-        axios.get(`http://localhost:3000/allGroups/user/${user.email}`)
+        axiosSeceure.get(`http://localhost:3000/allGroups/user/${user.email}`)
             .then(res => {
                 console.log(res.data);
-                setGroup(res.data);
+                setGroups(res.data);
             })
             .catch(err => {
                 console.error("Error fetching user groups:", err);
             });
-    }, [user?.email]);
+    }, [ user?.email ]);
 
     return (
         <aside className="h-[calc(100vh-2rem)] max-h-screen overflow-y-auto rounded-3xl text-slate-800 border border-slate-200 bg-white p-4 shadow-sm scrollbar-none">
@@ -40,23 +42,20 @@ const Inbox = () => {
                 />
             </div>
 
-            {/* গ্রুপ চ্যাট লিস্ট */}
             <div className="space-y-2">
-                {group.map((d, index) => (
+                {groups.map((d, index) => (
                     <NavLink
-                        to={`chating/${encodeURIComponent(d.name)}`}
+                        to={`chating/${encodeURIComponent(d._id)}`}
                         key={d._id || index}
                         className={({ isActive }) =>
-                            `flex items-center gap-3 p-3.5 rounded-2xl transition-all duration-200 ${
-                                isActive 
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-[1.02]' 
-                                    : 'hover:bg-slate-100/80 text-slate-700'
+                            `flex items-center gap-3 p-3.5 rounded-2xl transition-all duration-200 ${isActive
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-[1.02]'
+                                : 'hover:bg-slate-100/80 text-slate-700'
                             }`
                         }
                     >
                         {({ isActive }) => (
                             <>
-                                {/* গ্রুপের ছবি অথবা প্রথম অক্ষর */}
                                 <div className="relative shrink-0">
                                     {d.photo || d.imageName ? (
                                         <img
@@ -71,25 +70,20 @@ const Inbox = () => {
                                         />
                                     ) : null}
 
-                                    {/* ফলব্যাক লেটার (যদি ছবি না থাকে) */}
                                     <div
-                                        className={`h-12 w-12 rounded-full items-center justify-center font-bold text-lg shadow-inner ${
-                                            isActive ? 'bg-white text-blue-600' : 'bg-blue-100 text-blue-600'
-                                        }`}
+                                        className={`h-12 w-12 rounded-full items-center justify-center font-bold text-lg shadow-inner ${isActive ? 'bg-white text-blue-600' : 'bg-blue-100 text-blue-600'
+                                            }`}
                                         style={{ display: (d.photo || d.imageName) ? "none" : "flex" }}
                                     >
                                         {d.name ? d.name.charAt(0).toUpperCase() : "G"}
                                     </div>
                                 </div>
 
-                                {/* গ্রুপের নাম ও বিবরণ */}
                                 <div className="flex-1 min-w-0">
                                     <h1 className="font-semibold text-base truncate capitalize tracking-wide">
                                         {d.name}
                                     </h1>
-                                    <p className={`text-xs truncate mt-0.5 font-medium ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>
-                                        {d.department || "Tap to chat"}
-                                    </p>
+
                                 </div>
                             </>
                         )}

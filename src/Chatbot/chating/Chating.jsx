@@ -3,17 +3,22 @@ import { FiSend, FiPaperclip, FiMoreVertical, FiCode, FiUser, FiPlus, FiImage, F
 import { useParams } from 'react-router';
 import axios from 'axios';
 import UseAuth from '../../Hook/UseAuth';
+import { Bounce, ToastContainer, toast } from 'react-toastify';
+import useAxiosSecure from '../../Hook/UseAxiosSeceure';
 
 const Chating = () => {
+    const axiosSeceure = useAxiosSecure();
     const { user } = UseAuth();
-    const { name: rawGroupName } = useParams();
-    const groupName = decodeURIComponent(rawGroupName || "");
+    const { id: rawGroupID } = useParams();
+    const groupID = decodeURIComponent(rawGroupID || "");
 
     const [ messages, setMessages ] = useState([]);
     const [ members, setMembers ] = useState([]);
     const [ inputText, setInputText ] = useState("");
     const [ photo, setPhoto ] = useState("");
     const [ allPeople, setAllPeople ] = useState([]);
+    const [ groupName, setGroupName ] = useState("");
+    const [ theme, setTheme ] = useState("");
 
     // Modal States
     const [ newPhotoUrl, setNewPhotoUrl ] = useState("");
@@ -22,32 +27,30 @@ const Chating = () => {
 
     // Chat Data Load
     const fetchGroupData = () => {
-        if (!groupName) return;
+        if (!groupID) return;
         setMessages([]);
         setMembers([]);
-        // setPhoto([]);
 
-        axios.get(`http://localhost:3000/allGroups/${encodeURIComponent(groupName)}`)
+        axiosSeceure.get(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}`)
             .then(res => {
                 const groupAllData = res.data;
+                setTheme(groupAllData.bgImage || groupAllData.themeImage || "");
+                setGroupName(groupAllData.name);
                 setMessages(groupAllData.messages || []);
                 setMembers(groupAllData.members || []);
                 setPhoto(groupAllData.imageName || groupAllData.photo || "");
             })
             .catch(err => console.error("Error loading chat group data:", err));
-        setMessages([]);
-        setMembers([]);
-        // setPhoto([]);
     };
 
     useEffect(() => {
         fetchGroupData();
-        axios.get("http://localhost:3000/users")
+        axiosSeceure.get("http://localhost:3000/users")
             .then(res => {
                 setAllPeople(res.data || []);
             })
             .catch(err => console.error("Error fetching users:", err));
-    }, [ groupName ]);
+    }, [ groupID ]);
 
     // Auto Scroll Down
     useEffect(() => {
@@ -71,26 +74,26 @@ const Chating = () => {
         setMessages((prevSms) => [ ...prevSms, newMessage ]);
         setInputText("");
 
-        axios.post(`http://localhost:3000/allGroups/${encodeURIComponent(groupName)}/messages`, newMessage)
+        axiosSeceure.post(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}/messages`, newMessage)
             .catch(err => console.error("Failed to save message:", err));
     };
 
     // Direct Add Member from List
-    const handleDirectAddMember = (user) => {
-        if (!user) return;
+    const handleDirectAddMember = (targetUser) => {
+        if (!targetUser) return;
 
-        axios.post(`http://localhost:3000/allGroups/${encodeURIComponent(groupName)}/members`, {
+        axiosSeceure.post(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}/members`, {
             newMember: {
-                name: user.name,
-                email: user.email,
-                role: user.role || "student",
-                imageName: user.imageName || ""
+                name: targetUser.name,
+                email: targetUser.email,
+                role: targetUser.role || "student",
+                imageName: targetUser.imageName || ""
             },
             groupName: groupName
         })
             .then(() => {
-                alert("Member added successfully!");
-                fetchGroupData(); // ডাটা রিফ্রেশ করা
+                toast.success("Member added successfully!");
+                fetchGroupData();
             })
             .catch(err => console.error("Failed to add member:", err));
     };
@@ -100,15 +103,27 @@ const Chating = () => {
         e.preventDefault();
         if (!newPhotoUrl.trim()) return;
 
-        axios.patch(`http://localhost:3000/allGroups/${encodeURIComponent(groupName)}/photo`, {
+        axiosSeceure.patch(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}/photo`, {
             photoUrl: newPhotoUrl.trim()
         })
             .then(() => {
                 setPhoto(newPhotoUrl.trim());
                 setNewPhotoUrl("");
-                alert("Group photo updated!");
+                toast.success("Group photo updated!");
             })
             .catch(err => console.error("Failed to update photo:", err));
+    };
+
+    //  Update Chat Theme Background Image
+    const handleUpdateThemeImage = (imgUrl) => {
+        axiosSeceure.patch(`http://localhost:3000/allGroups/${encodeURIComponent(groupID)}/bgImage`, {
+            bgImage: imgUrl
+        })
+            .then(() => {
+                setTheme(imgUrl);
+                toast.success("Chat theme updated successfully!");
+            })
+            .catch(err => console.error("Failed to update theme image:", err));
     };
 
     const formatTime = (isoString) => {
@@ -126,8 +141,28 @@ const Chating = () => {
         return `http://localhost:3000/uploads/${imgName}`;
     };
 
+    // bg themes wallpaper image
+    const presetThemes = [
+        "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
+        "https://imgs.search.brave.com/ry5VgO-OVNQWSGN1BQwF0YXTI9g9pN3xHicJi__FJcQ/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93YWxs/cGFwZXJzLmNvbS9p/bWFnZXMvdGh1bWJu/YWlsL2NvbG9yZnVs/LWJsdXJyeS10aGVt/ZXMtbnlzOWJ4ZTNu/OTdnaGloay5qcGc",
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+        "https://images.unsplash.com/photo-1550684848-fac1c5b4e853",
+        "https://imgs.search.brave.com/lkLvn82EBqM8ozrOgu2fWxACaT4rUgsXRBRwhOhwdPc/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMTcv/MDQ2LzczMy9zbWFs/bC9zcGVjaWFsLWhl/YXJ0LWJhY2tncm91/bmQtZm9yLXZhbGVu/dGluZS1kYXktd2l0/aC13aGl0ZS1jbG91/ZC1hbmQtdXNlZC13/aXRoLXNpbWlsYXIt/dGhlbWUtdmVjdG9y/LmpwZw",
+        "https://imgs.search.brave.com/75vDDI-ZoInfBwXdKm1yfPnlqy6Hptk92a_eyRsx2VM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNjcv/MzY3Lzg1NC9zbWFs/bC9zb2Z0LWNoYW9z/LW9mLWNvbG9ycy1p/bi1kaWdpdGFsLXdh/dGVyY29sb3ItYmFj/a2dyb3VuZC1hYnN0/cmFjdC10aGVtZS1m/cmVlLXZlY3Rvci5q/cGc",
+        "https://imgs.search.brave.com/2uAWTkdWJPV-VqxReN0zYxzT6RYk_cmEhn7520AgCXk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNTEv/MTQ5LzU1NC9zbWFs/bC9oYW5kLXBhaW50/ZWQtd2ludGVyLXRo/ZW1lZC1mbG9yYWwt/d2F0ZXJjb2xvdXIt/YmFja2dyb3VuZC1m/cmVlLXZlY3Rvci5q/cGc",
+        "https://imgs.search.brave.com/oKzKnAr1VyP3Eus-5DSwHpJJiuKMLWcrkSP2RzugGpg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/bWFnbmlmaWMuY29t/L2ZyZWUtdmVjdG9y/L3dhdGVyY29sb3It/YmFja2dyb3VuZC10/aGVtZV8yMy0yMTQ4/ODI1NzgxLmpwZz9z/ZW10PWFpc19oeWJy/aWQmdz03NDAmcT04/MA",
+
+    ];
+
     return (
-        <div className="flex flex-col h-165 max-h-screen overflow-hidden bg-slate-100 border-l border-slate-200">
+        <div
+            style={{
+                backgroundImage: theme ? `url(${theme})` : 'none'
+            }}
+            className="flex flex-col bg-center bg-cover h-165 max-h-screen overflow-hidden bg-slate-100 border-l border-slate-200 relative"
+        >
+            {/* ব্যাকগ্রাউন্ড ইমেজের ওপর হালকা ওভারলে যাতে চ্যাটের লেখাগুলো পরিষ্কার দেখা যায় */}
+            {theme && <div className="absolute inset-0 bg-black/20 pointer-events-none" />}
 
             {/* ---------- Header ---------- */}
             <div className="shrink-0 flex items-center justify-between px-6 py-3.5 bg-white border-b border-slate-200 shadow-sm z-10">
@@ -164,13 +199,8 @@ const Chating = () => {
             </div>
 
             {/* ---------- Chat Body ---------- */}
-            <div className="flex-1 p-6 overflow-y-auto space-y-4">
-                {messages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                        <FiCode className="w-12 h-12 mb-2 stroke-1" />
-                        <p className="text-sm font-medium">Kono barta paoya jayni. Prothom message-ti likhun!</p>
-                    </div>
-                ) : (
+            <div className="flex-1 p-6 overflow-y-auto space-y-4 relative z-10">
+                {
                     messages.map((msg, index) => {
                         if (!msg) return null;
                         const isMe = msg?.senderEmail === user?.email;
@@ -188,7 +218,7 @@ const Chating = () => {
 
                                 <div className={`flex flex-col max-w-[70%] ${isMe ? "items-end" : "items-start"}`}>
                                     {!isMe && (
-                                        <span className="text-[11px] font-semibold text-slate-500 mb-1 ml-1">
+                                        <span className="text-[11px] font-semibold text-slate-700 bg-white/80 px-2 py-0.5 rounded-full mb-1 ml-1 shadow-xs">
                                             {msg?.senderName || "Unknown User"}
                                         </span>
                                     )}
@@ -201,20 +231,18 @@ const Chating = () => {
                                     >
                                         <p>{msg?.sms || ""}</p>
                                     </div>
-
-                                    <span className="text-[10px] text-slate-400 mt-1 px-1">
+                                    <span className="text-[10px] text-slate-600 bg-white/70 px-1.5 py-0.5 rounded-md mt-1">
                                         {formatTime(msg?.createdAt)}
                                     </span>
                                 </div>
                             </div>
                         );
                     })
-                )}
-                <div ref={chatEndRef} />
+                }
             </div>
 
             {/* ---------- Input Footer ---------- */}
-            <form onSubmit={handleSend} className="shrink-0 p-4 bg-white border-t border-slate-200 flex items-center gap-2">
+            <form onSubmit={handleSend} className="shrink-0 p-4 bg-white border-t border-slate-200 flex items-center gap-2 relative z-10 shadow-md">
                 <button
                     type="button"
                     className="p-2.5 text-slate-400 hover:text-indigo-600 rounded-full hover:bg-slate-100 transition-colors"
@@ -243,8 +271,8 @@ const Chating = () => {
             </form>
 
             {/* ---------- Messenger Style Modal Details ---------- */}
-            <dialog id="group_details_modal" className="modal modal-bottom sm:modal-middle">
-                <div className="modal-box bg-white p-6 rounded-3xl shadow-2xl max-w-md text-slate-800">
+            <dialog id="group_details_modal" className="modal  modal-bottom sm:modal-middle">
+                <div className="modal-box bg-white p-6 scrollbar-none rounded-3xl shadow-2xl max-w-md text-slate-800">
 
                     <form method="dialog">
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-slate-400 hover:text-slate-600">
@@ -263,6 +291,26 @@ const Chating = () => {
                         </div>
                         <h3 className="font-bold text-slate-900 text-lg capitalize">{groupName}</h3>
                         <p className="text-xs text-slate-500">{members.length} Members</p>
+                    </div>
+
+                    {/*  Messenger Style Theme / Wallpaper Selector */}
+                    <div className="mb-5 ">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                            <FiImage /> Chat Theme / Wallpaper
+                        </label>
+                        <div className="flex gap-2.5 scrollbar-none overflow-x-auto py-1">
+                            {presetThemes.map((imgUrl, idx) => (
+                                <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => handleUpdateThemeImage(imgUrl)}
+                                    className={`h-12 w-12 rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 shrink-0 shadow-sm ${theme === imgUrl ? 'border-indigo-600 ring-2 ring-indigo-200' : 'border-slate-200'
+                                        }`}
+                                >
+                                    <img src={imgUrl} alt="Theme option" className="h-full w-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {/* 1. Edit Photo Section */}
@@ -341,9 +389,7 @@ const Chating = () => {
                             {members.map((m, idx) => (
                                 <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
                                     <div className="flex items-center gap-2 truncate">
-                                        <div className="w-7 h-7 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center font-bold shrink-0">
-                                            {m?.name ? m.name.charAt(0).toUpperCase() : "U"}
-                                        </div>
+                                        <img className='h-8 w-8 rounded-full bg-gray-300 object-cover' src={getProfileImage(m.imageName)} alt="" />
                                         <div className="truncate">
                                             <p className="text-xs font-semibold text-slate-800 leading-tight">{m?.name || "Member"}</p>
                                             <p className="text-[10px] text-slate-400">{m?.email}</p>
@@ -362,6 +408,19 @@ const Chating = () => {
                 </div>
             </dialog>
 
+            <ToastContainer
+                position="top-center"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick={false}
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Bounce}
+            />
         </div>
     );
 };

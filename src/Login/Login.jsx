@@ -21,6 +21,9 @@ const Login = () => {
         EmailPassLogin(email, password)
         .then(res => {
             const user = res.user
+            const token = user.accessToken;
+            localStorage.setItem("IDtoken", token)
+            console.log(token)
             navigate("/inbox")
         })
         .catch(err=> {

@@ -49,7 +49,7 @@ const Register = () => {
 
         const role = status;
         const name = e.target.name.value;
-        const id = e.target.id.value;
+        const idCard = e.target.id.value;
         const image = e.target.image.value; // File Object
         const department = e.target.department.value;
         const semester = status === "student" ? e.target.semester?.value : "";
@@ -58,7 +58,7 @@ const Register = () => {
         const confirmpassword = e.target.confirm.value;
 
         if (password !== confirmpassword) {
-            setError("Password duti milche na!");
+            setError("Password no matching");
             return;
         }
 
@@ -67,7 +67,7 @@ const Register = () => {
             email,
             password,
             role,
-            id,
+            idCard,
             imageName: image,
             department,
             semester,
@@ -87,7 +87,7 @@ const Register = () => {
                     // Firebase-এর UID অবজেক্টে যুক্ত করা
                     const userFullData = {
                         ...newUserData,
-                        firebaseUid: user.uid,
+                        uid: user.uid,
                         createdAt: new Date()
                     };
                     // send user data to database
@@ -197,8 +197,8 @@ const Register = () => {
                             <input id="id" required name="uid" placeholder={status === "student" ? "Enter your roll" : "Enter your ID"} className={inputCls} />
                         </Field>
 
-                        <Field label="Student ID card image" id="image">
-                            <input type="text" placeholder="Enter your photo URL" required id="image" name="image" className={inputCls} />
+                        <Field label="Image" id="image">
+                            <input type="text" placeholder="Ente your photo URL" required id="image" name="image" className={inputCls} />
                         </Field>
 
                         <div className={`grid gap-4 ${status === "student" ? "sm:grid-cols-2" : ""}`}>
@@ -236,7 +236,7 @@ const Register = () => {
                                         name="password"
                                         type={show ? "text" : "password"}
                                         autoComplete="new-password"
-                                        placeholder="••••••••"
+                                        placeholder="Enter the password"
                                         className={`${inputCls} pr-12`}
                                     />
                                     <button
@@ -257,7 +257,7 @@ const Register = () => {
                                     name="confirm"
                                     type={show ? "text" : "password"}
                                     autoComplete="new-password"
-                                    placeholder="••••••••"
+                                    placeholder="Confirm password"
                                     className={inputCls}
                                 />
                             </Field>

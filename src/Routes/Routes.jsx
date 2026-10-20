@@ -6,7 +6,6 @@ import RoutLayout from "../Layout/RoutLayout";
 import Register from "../Register/Register";
 import InboxLayout from "../Chatbot/InboxLayout";
 import Navbar from "../Chatbot/Navbar/Navbar";
-import Cst from "../Chatbot/CST/CST";
 import Chating from "../Chatbot/chating/Chating";
 
 export const router = createBrowserRouter([
@@ -42,7 +41,7 @@ export const router = createBrowserRouter([
                 </PrivateRoutes>
             },
             {
-                path: "chating/:name",
+                path: "chating/:id",
                 element: <PrivateRoutes>
                     <Chating></Chating>
                 </PrivateRoutes>
