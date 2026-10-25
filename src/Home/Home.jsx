@@ -25,7 +25,7 @@ const Home = () => {
                             user? <button onClick={handleLogout} className="rounded-lg bg-red-500 text-white px-4 py-2 font-semibold  hover:bg-red-700">Log out</button>: <a href="/login" className="rounded-lg bg-blue-500 text-white px-4 py-2 font-semibold  hover:bg-blue-700">Log in</a>
                         }
                         
-                        <a href="/register" className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-emerald-950 hover:bg-amber-400">
+                        <a href="/register" className="rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-700">
                             Register
                         </a>
                     </div>
@@ -54,7 +54,7 @@ const Home = () => {
             </section>
 
             {/* Footer */}
-            <footer className="border-t border-stone-200 py-6 text-center text-sm text-stone-500">
+            <footer className="border-t border-stone-200 py-5 text-center text-sm text-stone-500 mt-15">
                 © {new Date().getFullYear()} Munshigonj Polytechnic Institute
             </footer>
         </div>

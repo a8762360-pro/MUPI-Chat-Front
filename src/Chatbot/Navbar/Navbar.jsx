@@ -62,38 +62,38 @@ const Navbar = () => {
     };
 
     return (
-        <header className="border-b border-slate-200 bg-slate-50 backdrop-blur-sm sticky top-0 z-50">
+        <header className="border-b border-slate-200 bg-slate-50  backdrop-blur-sm sticky top-0 z-50">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
 
                 {/* Logo & Title */}
-                <div className="flex items-center gap-3">
-                    <NavLink to="/" className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-emerald-700 text-lg font-bold text-white shadow-sm transition hover:opacity-90">
+                <NavLink to="/" className="flex items-center gap-3">
+                    <div  className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl bg-emerald-700 text-lg font-bold text-white shadow-sm transition hover:opacity-90">
                         <img
                             src="https://imgs.search.brave.com/CWTFefyPC_SenK7WtYdow9ciCXC1oZSJtd8ZCMEs-d4/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zZG4u/c2lnbmFsaGlyZS5j/by9zdG9yYWdlL2Nv/bXBhbnkvOTU3OC8y/YTAzLzQxMGUvNzI3/YS8yN2Y4L2Q2ZjYv/MzgzNS80YWI0Lndl/YnA"
                             alt="MUPI Chat Logo"
                             className="h-full w-full object-cover"
                         />
-                    </NavLink>
-                    <div>
+                    </div>
+                    <div className=''>
                         <p className="text-base font-bold text-slate-900 leading-tight">MUPI Chat</p>
                         <p className="text-xs text-slate-500 font-medium">Campus communication</p>
                     </div>
-                </div>
+                </NavLink>
 
                 {/* Actions */}
                 <div className="flex items-center gap-3">
                     {/* Notification Button */}
-                    <button className="relative rounded-full border border-slate-200 bg-slate-50 p-2.5 text-slate-600 transition hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50/50">
+                    {/* <button className="relative rounded-full border border-slate-200 bg-slate-50 p-2.5 text-slate-600 transition hover:border-emerald-200 hover:text-emerald-700 hover:bg-emerald-50/50">
                         <Bell size={18} />
-                        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white shadow-sm">
+                        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm">
                             4
                         </span>
-                    </button>
+                    </button> */}
 
                     {/* New Group Button */}
                     <button
                         onClick={() => document.getElementById('my_modal_3').showModal()}
-                        className="flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 active:scale-95"
+                        className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 active:scale-95"
                     >
                         <Plus size={18} />
                         <span>New Group</span>

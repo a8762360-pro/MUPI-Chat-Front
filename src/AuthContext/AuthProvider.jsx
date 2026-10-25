@@ -3,11 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import axios from 'axios';
 import { auth } from '../Firebase/Firebase';
+import useAxiosSecure from '../Hook/UseAxiosSeceure';
 
 const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState("");
-    console.log(token)
+    // console.log(token)
     const [loading, setLoading] = useState(true);
 
     const createUser = (email, password) => {

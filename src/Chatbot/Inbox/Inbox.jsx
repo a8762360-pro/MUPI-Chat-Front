@@ -1,9 +1,12 @@
 import axios from 'axios';
-import { Search, MessageSquarePlus, Sparkles } from 'lucide-react';
+import { Search, MessageSquarePlus, Sparkles, User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router';
 import UseAuth from '../../Hook/UseAuth';
 import useAxiosSecure from '../../Hook/UseAxiosSeceure';
+import Navigate from './Navigate/Navigate';
+import Profile from './Profile/Profile';
+// import Profile from './Profile/Profile';
 
 const Inbox = () => {
     const { user } = UseAuth();
@@ -22,13 +25,13 @@ const Inbox = () => {
             });
     }, [ user?.email ]);
 
-    const filteredGroups = groups.filter(group => 
+    const filteredGroups = groups.filter(group =>
         group.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
         <aside className="h-[calc(100vh-5rem)] max-h-screen bg-slate-50 flex flex-col rounde border border-slate-200/80  backdrop-blur-xl p-4 shadow-xl shadow-slate-100 transition-all">
-            
+
             {/* Header Section */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
                 <div>
@@ -43,6 +46,9 @@ const Inbox = () => {
                         </span> */}
                     </h2>
                 </div>
+
+                {/*  */}
+                <Profile></Profile>
             </div>
 
             {/* Search Box */}
@@ -65,10 +71,9 @@ const Inbox = () => {
                             to={`chating/${encodeURIComponent(d.groupId)}`}
                             key={d._id || index}
                             className={({ isActive }) =>
-                                `group relative flex items-center gap-3.5 p-3 rounded-2xl transition-all duration-300 ${
-                                    isActive
-                                        ? 'bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-lg shadow-emerald-600/25 scale-[1.01]'
-                                        : 'hover:bg-slate-50 text-slate-700 hover:shadow-sm'
+                                `group relative flex items-center gap-3.5 p-3 rounded-2xl transition-all duration-300 ${isActive
+                                    ? 'bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-lg shadow-emerald-600/25 scale-[1.01]'
+                                    : 'hover:bg-slate-50 text-slate-700 hover:shadow-sm'
                                 }`
                             }
                         >
@@ -83,9 +88,8 @@ const Inbox = () => {
                                     <div className="relative shrink-0">
                                         {d.photo || d.imageName ? (
                                             <img
-                                                className={`h-12 w-12 rounded-2xl object-cover ring-2 transition-transform duration-300 group-hover:scale-105 ${
-                                                    isActive ? 'ring-white/40' : 'ring-slate-100'
-                                                }`}
+                                                className={`h-12 w-12 rounded-2xl object-cover ring-2 transition-transform duration-300 group-hover:scale-105 ${isActive ? 'ring-white/40' : 'ring-slate-100'
+                                                    }`}
                                                 src={d.photo || d.imageName}
                                                 alt={d.name}
                                                 onError={(e) => {
@@ -97,11 +101,10 @@ const Inbox = () => {
                                         ) : null}
 
                                         <div
-                                            className={`h-12 w-12 rounded-2xl items-center justify-center font-bold text-lg shadow-inner transition-transform duration-300 group-hover:scale-105 ${
-                                                isActive 
-                                                    ? 'bg-white/20 text-white backdrop-blur-md' 
-                                                    : 'bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-800'
-                                            }`}
+                                            className={`h-12 w-12 rounded-2xl items-center justify-center font-bold text-lg shadow-inner transition-transform duration-300 group-hover:scale-105 ${isActive
+                                                ? 'bg-white/20 text-white backdrop-blur-md'
+                                                : 'bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-800'
+                                                }`}
                                             style={{ display: (d.photo || d.imageName) ? "none" : "flex" }}
                                         >
                                             {d.name ? d.name.charAt(0).toUpperCase() : "G"}
@@ -136,7 +139,9 @@ const Inbox = () => {
                     </div>
                 )}
             </div>
+            {/* <Navigate></Navigate> */}
         </aside>
+
     );
 };
 

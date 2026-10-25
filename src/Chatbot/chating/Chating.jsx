@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiSend, FiPaperclip, FiMoreVertical, FiCode, FiUser, FiPlus, FiImage, FiX, FiUsers, FiUserPlus } from 'react-icons/fi';
+import { FiSend, FiPaperclip, FiMoreVertical, FiCode, FiUser, FiPlus, FiImage, FiX, FiUsers, FiUserPlus, FiTrash2 } from 'react-icons/fi';
 import { useParams } from 'react-router';
 import axios from 'axios';
 import UseAuth from '../../Hook/UseAuth';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import useAxiosSecure from '../../Hook/UseAxiosSeceure';
+import Swal from 'sweetalert2';
+
 
 const Chating = () => {
     const axiosSeceure = useAxiosSecure();
@@ -24,6 +26,10 @@ const Chating = () => {
     const [ newPhotoUrl, setNewPhotoUrl ] = useState("");
 
     const chatEndRef = useRef(null);
+
+    // Check if current logged-in user is admin of this group
+    const currentMemberInfo = members.find(m => m.email === user?.email);
+    const isAdmin = currentMemberInfo?.role === 'admin' || user?.role === 'admin';
 
     // Chat Data Load
     const fetchGroupData = () => {
@@ -78,9 +84,14 @@ const Chating = () => {
             .catch(err => console.error("Failed to save message:", err));
     };
 
-    // Direct Add Member from List
+    // Direct Add Member from List (Only Admin)
     const handleDirectAddMember = (targetUser) => {
+        if (!isAdmin) {
+            toast.error("Only admins can add members!");
+            return;
+        }
         if (!targetUser) return;
+
         axiosSeceure.post(`/allGroups/${encodeURIComponent(groupID)}/members`, {
             newMember: {
                 name: targetUser.name,
@@ -92,10 +103,50 @@ const Chating = () => {
         })
             .then(() => {
                 toast.success("Member added successfully!");
-                
                 fetchGroupData();
             })
             .catch(err => console.error("Failed to add member:", err));
+    };
+
+    // Remove Member from Group (With Confirmation Modal)
+    const handleRemoveMember = (memberEmail, memberName) => {
+        if (!isAdmin) {
+            toast.error("Only admins can remove members!");
+            return;
+        }
+
+        // DaisyUI মোডাল সঠিকভাবে বন্ধ করার জন্য .close() মেথড ব্যবহার করুন
+        const modalElement = document.getElementById('group_details_modal');
+        if (modalElement) {
+            modalElement.close();
+        }
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you really want to remove "${memberName || memberEmail}" from this group?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, remove!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axiosSeceure.delete(`/allGroups/${encodeURIComponent(groupID)}/members/${encodeURIComponent(memberEmail)}`)
+                    .then(() => {
+                        Swal.fire(
+                            'Removed!',
+                            'Member has been removed from the group.',
+                            'success'
+                        );
+                        fetchGroupData();
+                    })
+                    .catch(err => {
+                        console.error("Failed to remove member:", err);
+                        toast.error("Failed to remove member.");
+                    });
+            }
+        });
     };
 
     // Update Group Icon Photo URL
@@ -114,14 +165,14 @@ const Chating = () => {
             .catch(err => console.error("Failed to update photo:", err));
     };
 
-    //  Update Chat Theme Background Image
+    // Update Chat Theme Background Image
     const handleUpdateThemeImage = (imgUrl) => {
         axiosSeceure.patch(`/allGroups/${encodeURIComponent(groupID)}/bgImage`, {
             bgImage: imgUrl
         })
             .then(() => {
                 setTheme(imgUrl);
-                toast.success("Chat theme updated successfully!");
+                // toast.success("Chat theme updated successfully!");
             })
             .catch(err => console.error("Failed to update theme image:", err));
     };
@@ -132,7 +183,6 @@ const Chating = () => {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    // Helper to resolve Image Source URL
     const getProfileImage = (imgName) => {
         if (!imgName) return null;
         if (imgName.startsWith("http://") || imgName.startsWith("https://")) {
@@ -141,7 +191,6 @@ const Chating = () => {
         return `/uploads/${imgName}`;
     };
 
-    // bg themes wallpaper image
     const presetThemes = [
         "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
         "https://imgs.search.brave.com/ry5VgO-OVNQWSGN1BQwF0YXTI9g9pN3xHicJi__FJcQ/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93YWxs/cGFwZXJzLmNvbS9p/bWFnZXMvdGh1bWJu/YWlsL2NvbG9yZnVs/LWJsdXJyeS10aGVt/ZXMtbnlzOWJ4ZTNu/OTdnaGloay5qcGc",
@@ -149,9 +198,6 @@ const Chating = () => {
         "https://images.unsplash.com/photo-1550684848-fac1c5b4e853",
         "https://imgs.search.brave.com/lkLvn82EBqM8ozrOgu2fWxACaT4rUgsXRBRwhOhwdPc/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMTcv/MDQ2LzczMy9zbWFs/bC9zcGVjaWFsLWhl/YXJ0LWJhY2tncm91/bmQtZm9yLXZhbGVu/dGluZS1kYXktd2l0/aC13aGl0ZS1jbG91/ZC1hbmQtdXNlZC13/aXRoLXNpbWlsYXIt/dGhlbWUtdmVjdG9y/LmpwZw",
         "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
-        "https://imgs.search.brave.com/2uAWTkdWJPV-VqxReN0zYxzT6RYk_cmEhn7520AgCXk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNTEv/MTQ5LzU1NC9zbWFs/bC9oYW5kLXBhaW50/ZWQtd2ludGVyLXRo/ZW1lZC1mbG9yYWwt/d2F0ZXJjb2xvdXIt/YmFja2dyb3VuZC1m/cmVlLXZlY3Rvci5q/cGc",
-        "https://imgs.search.brave.com/oKzKnAr1VyP3Eus-5DSwHpJJiuKMLWcrkSP2RzugGpg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/bWFnbmlmaWMuY29t/L2ZyZWUtdmVjdG9y/L3dhdGVyY29sb3It/YmFja2dyb3VuZC10/aGVtZV8yMy0yMTQ4/ODI1NzgxLmpwZz9z/ZW10PWFpc19oeWJy/aWQmdz03NDAmcT04/MA",
-
     ];
 
     return (
@@ -161,7 +207,6 @@ const Chating = () => {
             }}
             className="flex flex-col bg-center bg-cover h-165 border-b max-h-screen overflow-hidden border-l border-slate-200 relative"
         >
-            {/* ব্যাকগ্রাউন্ড ইমেজের ওপর হালকা ওভারলে যাতে চ্যাটের লেখাগুলো পরিষ্কার দেখা যায় */}
             {theme && <div className="absolute inset-0 bg-black/20 pointer-events-none" />}
 
             {/* ---------- Header ---------- */}
@@ -189,7 +234,6 @@ const Chating = () => {
                     </div>
                 </div>
 
-                {/* Group Details / Settings Button */}
                 <button
                     onClick={() => document.getElementById('group_details_modal').showModal()}
                     className="p-2 text-slate-500 hover:text-indigo-600 rounded-xl hover:bg-slate-100 transition-all active:scale-95"
@@ -239,15 +283,16 @@ const Chating = () => {
                         );
                     })
                 }
+                <div ref={chatEndRef} />
             </div>
 
             {/* ---------- Input Footer ---------- */}
             <form onSubmit={handleSend} className="shrink-0 p-4 bg-slate-50 border-t border-slate-200 flex items-center gap-2 relative z-10 shadow-md">
                 <button
                     type="button"
-                    className="p-2.5 text-slate-400 hover:text-indigo-600  rounded-full  transition-colors"
+                    className="p-2.5 text-slate-400 hover:text-indigo-600 rounded-full transition-colors"
                 >
-                    <FiPaperclip className="w-10 h-10  rounded-4xl p-2 hover:bg-blue-600 hover:text-white" />
+                    <FiPaperclip className="w-6 h-6" />
                 </button>
 
                 <input
@@ -255,7 +300,7 @@ const Chating = () => {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Write a message..."
-                    className="flex-1 px-4 py-2.5 bg-white  border border-gray-300 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-indigo-500 transition-all text-slate-800 placeholder-slate-400"
+                    className="flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-indigo-500 transition-all text-slate-800 placeholder-slate-400"
                 />
 
                 <button
@@ -270,8 +315,8 @@ const Chating = () => {
                 </button>
             </form>
 
-            {/* ---------- Messenger Style Modal Details ---------- */}
-            <dialog id="group_details_modal" className="modal  modal-bottom sm:modal-middle">
+            {/* ---------- Modal Details ---------- */}
+            <dialog id="group_details_modal" className="modal modal-bottom sm:modal-middle">
                 <div className="modal-box bg-white p-6 scrollbar-none rounded-3xl shadow-2xl max-w-md text-slate-800">
 
                     <form method="dialog">
@@ -293,8 +338,34 @@ const Chating = () => {
                         <p className="text-xs text-slate-500">{members.length} Members</p>
                     </div>
 
-                    {/*  Messenger Style Theme / Wallpaper Selector */}
-                    <div className="mb-5 ">
+                    {/* গ্রুপের যেকোনো মেম্বার এখন গ্রুপ ফটো আপডেট করতে পারবে */}
+                    <form onSubmit={handleUpdatePhoto} className="mb-5 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+                            <FiImage /> Update Group Photo URL
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={newPhotoUrl}
+                                onChange={(e) => setNewPhotoUrl(e.target.value)}
+                                placeholder="Paste new image URL..."
+                                className="flex-1 px-3 py-1.5 bg-white border border-gray-300 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-800 placeholder-slate-400"
+                            />
+                            <button
+                                type="submit"
+                                disabled={!newPhotoUrl.trim()}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-all ${newPhotoUrl.trim()
+                                        ? "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
+                                        : "bg-indigo-300 cursor-not-allowed"
+                                    }`}
+                            >
+                                Update
+                            </button>
+                        </div>
+                    </form>
+
+                    {/* Chat Theme Wallpaper */}
+                    <div className="mb-5">
                         <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
                             <FiImage /> Chat Theme / Wallpaper
                         </label>
@@ -304,8 +375,7 @@ const Chating = () => {
                                     key={idx}
                                     type="button"
                                     onClick={() => handleUpdateThemeImage(imgUrl)}
-                                    className={`h-12 w-12 rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 shrink-0 shadow-sm ${theme === imgUrl ? 'border-indigo-600 ring-2 ring-indigo-200' : 'border-slate-200'
-                                        }`}
+                                    className={`h-12 w-12 rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 shrink-0 shadow-sm ${theme === imgUrl ? 'border-indigo-600 ring-2 ring-indigo-200' : 'border-slate-200'}`}
                                 >
                                     <img src={imgUrl} alt="Theme option" className="h-full w-full object-cover" />
                                 </button>
@@ -313,74 +383,59 @@ const Chating = () => {
                         </div>
                     </div>
 
-                    {/* 1. Edit Photo Section */}
-                    <div className="mb-5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-                            <FiImage /> Update Group Icon (URL)
-                        </label>
-                        <form onSubmit={handleUpdatePhoto} className="flex gap-2">
-                            <input
-                                type="text"
-                                value={newPhotoUrl}
-                                onChange={(e) => setNewPhotoUrl(e.target.value)}
-                                placeholder="Paste image URL..."
-                                className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-indigo-500 focus:bg-white"
-                            />
-                            <button type="submit" className="px-3 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700">
-                                Save
-                            </button>
-                        </form>
-                    </div>
+                    {/* 2. Available People to Add (Admin Only) */}
+                    {isAdmin && (
+                        <div className="mb-5">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                                <FiUserPlus /> Add People to Group
+                            </label>
+                            <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
+                                {allPeople
+                                    .filter(m => !members.some(mem => mem.email === m.email)) // ✅ যারা অলরেডি মেম্বার, তারা ফিল্টার হয়ে বাদ যাবে
+                                    .map((m, index) => {
+                                        const imgSrc = getProfileImage(m?.imageName);
 
-                    {/* 2. Available People to Add */}
-                    <div className="mb-5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-                            <FiUserPlus /> Add People to Group
-                        </label>
-                        <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
-                            {allPeople.map((m, idx) => {
-                                const isAlreadyMember = members.some(mem => mem.email === m.email);
-                                const imgSrc = getProfileImage(m?.imageName);
+                                        return (
+                                            <div key={m?._id || index} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
+                                                <div className="flex items-center gap-2 truncate">
+                                                    <div className="w-8 h-8 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center font-bold overflow-hidden shrink-0">
+                                                        {imgSrc ? (
+                                                            <img
+                                                                src={imgSrc}
+                                                                alt={m?.name || "User"}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                            />
+                                                        ) : null}
+                                                        <span>{!imgSrc && (m?.name ? m.name.charAt(0).toUpperCase() : "U")}</span>
+                                                    </div>
+                                                    <div className="truncate">
+                                                        <p className="text-xs font-semibold text-slate-800 leading-tight">{m?.name || "User"}</p>
+                                                        <p className="text-[10px] text-slate-400">{m?.email}</p>
+                                                    </div>
+                                                </div>
 
-                                return (
-                                    <div key={m?._id || idx} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-                                        <div className="flex items-center gap-2 truncate">
-                                            <div className="w-8 h-8 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center font-bold overflow-hidden shrink-0">
-                                                {imgSrc ? (
-                                                    <img
-                                                        src={imgSrc}
-                                                        alt={m?.name || "User"}
-                                                        className="w-full h-full object-cover"
-                                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                                    />
-                                                ) : null}
-                                                <span>{m?.name ? m.name.charAt(0).toUpperCase() : "U"}</span>
+                                                <button
+                                                    onClick={() => handleDirectAddMember(m)}
+                                                    className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                                                >
+                                                    + Add
+                                                </button>
                                             </div>
-                                            <div className="truncate">
-                                                <p className="text-xs font-semibold text-slate-800 leading-tight">{m?.name || "User"}</p>
-                                                <p className="text-[10px] text-slate-400">{m?.email}</p>
-                                            </div>
-                                        </div>
+                                        );
+                                    })}
 
-                                        {isAlreadyMember ? (
-                                            <span className="text-[10px] bg-slate-200 text-slate-600 font-semibold px-2 py-1 rounded-lg">
-                                                Joined
-                                            </span>
-                                        ) : (
-                                            <button
-                                                onClick={() => handleDirectAddMember(m)}
-                                                className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1 rounded-lg transition-colors"
-                                            >
-                                                + Add
-                                            </button>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                {/* যদি সব ইউজার গ্রুপে যুক্ত থাকে, তবে একটি ছোট মেসেজ দেখাতে পারেন */}
+                                {allPeople.filter(m => !members.some(mem => mem.email === m.email)).length === 0 && (
+                                    <p className="text-[11px] text-slate-400 text-center py-2">No more users available to add.</p>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* 3. Current Group Members List */}
+
+
+                    {/* 3. Current Group Members List (Admin can delete members) */}
                     <div>
                         <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
                             <FiUsers /> Group Members
@@ -395,11 +450,25 @@ const Chating = () => {
                                             <p className="text-[10px] text-slate-400">{m?.email}</p>
                                         </div>
                                     </div>
-                                    {m?.role === 'admin' && (
-                                        <span className="text-[9px] bg-indigo-100 text-indigo-600 font-bold px-2 py-0.5 rounded-full">
-                                            Admin
-                                        </span>
-                                    )}
+
+                                    <div className="flex items-center gap-2">
+                                        {m?.role === 'admin' && (
+                                            <span className="text-[9px] bg-indigo-100 text-indigo-600 font-bold px-2 py-0.5 rounded-full">
+                                                Admin
+                                            </span>
+                                        )}
+
+                                        {/* Admin can delete any member except maybe themselves if desired */}
+                                        {isAdmin && m?.email !== user?.email && (
+                                            <button
+                                                onClick={() => handleRemoveMember(m.email)}
+                                                className="p-1.5 bg-red-100 hover:bg-red-600 text-red-600 hover:text-white rounded-lg transition-colors"
+                                                title="Remove Member"
+                                            >
+                                                <FiTrash2 size={14} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>

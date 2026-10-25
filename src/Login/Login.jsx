@@ -2,15 +2,17 @@ import React, { useState } from "react";
 import { Eye, EyeOff, LogIn, GraduationCap, Presentation, MessagesSquare } from "lucide-react";
 import { NavLink, useNavigate } from "react-router";
 import { useContext } from "react";
-import {AuthContext} from '../AuthContext/AuthContext'
+import { AuthContext } from '../AuthContext/AuthContext'
+import useAxiosSecure from "../Hook/UseAxiosSeceure";
 
 const Login = () => {
     const [ role, setRole ] = useState("student");
     const [ id, setId ] = useState("");
     const [ error, setError ] = useState("");
-    const {EmailPassLogin} = useContext(AuthContext)
+    const { EmailPassLogin } = useContext(AuthContext)
     const navigate = useNavigate();
-    
+    const axosSeceure = useAxiosSecure();
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -19,16 +21,20 @@ const Login = () => {
         const email = e.target.email.value;
         const password = e.target.password.value;
         EmailPassLogin(email, password)
-        .then(res => {
-            const user = res.user
-            const token = user.accessToken;
-            localStorage.setItem("IDtoken", token)
-            console.log(token)
-            navigate("/inbox")
-        })
-        .catch(err=> {
-            console.log(err)
-        })
+            .then(res => {
+                const user = res.user
+                const token = user.accessToken;
+                console.log(user, token)
+
+                alert("your login successfull")
+                navigate("/inbox")
+                // localStorage.setItem("IDtoken", token);
+                // console.log(token)
+            })
+            .catch(err => {
+                console.log(err)
+                alert(err.message)
+            })
         console.log(email, password)
 
     };
@@ -86,8 +92,8 @@ const Login = () => {
                     <p className="mt-1 text-stone-500">আপনার institute account দিয়ে ঢুকুন।</p>
 
                     <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
-                        
-                        
+
+
 
                         {/* ID */}
                         <div>
@@ -127,7 +133,7 @@ const Login = () => {
                             </div>
                         </div>
 
-                        
+
 
                         {error && (
                             <p role="alert" className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
