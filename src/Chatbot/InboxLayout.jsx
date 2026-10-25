@@ -6,14 +6,14 @@ import Navbar from './Navbar/Navbar';
 const InboxLayout = () => {
     
     return (
-        <div className='bg-white'>
+        <div className='bg-slate-100'>
             <Navbar></Navbar>
-            <section className="max-w-6xl mx-auto grid grid-cols-12 gap-2">
+            <section className="mt-2 mx-20 grid grid-cols-12 gap-2">
                 <div className="col-span-4">
                     <Inbox />
                 </div>
 
-                <div className=" col-span-8 border">
+                <div className=" col-span-8">
                     <Outlet />
                 </div>
             </section>

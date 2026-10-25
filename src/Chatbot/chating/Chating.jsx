@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiSend, FiPaperclip, FiMoreVertical, FiCode, FiUser, FiPlus, FiImage, FiX, FiUsers, FiUserPlus, FiTrash2 } from 'react-icons/fi';
+import { FiSend, FiPaperclip, FiMoreVertical, FiCode, FiUser, FiX } from 'react-icons/fi';
 import { useParams } from 'react-router';
-import axios from 'axios';
 import UseAuth from '../../Hook/UseAuth';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import useAxiosSecure from '../../Hook/UseAxiosSeceure';
 import Swal from 'sweetalert2';
-
+import GroupDetailsModal from './GroupDetailsModal/GroupDetailsModal';
 
 const Chating = () => {
     const axiosSeceure = useAxiosSecure();
@@ -17,6 +16,7 @@ const Chating = () => {
     const [ messages, setMessages ] = useState([]);
     const [ members, setMembers ] = useState([]);
     const [ inputText, setInputText ] = useState("");
+    const [ selectedFile, setSelectedFile ] = useState(null); // ✅ ফাইল বা প্রিভিউ রাখার জন্য স্টেট
     const [ photo, setPhoto ] = useState("");
     const [ allPeople, setAllPeople ] = useState([]);
     const [ groupName, setGroupName ] = useState("");
@@ -63,15 +63,27 @@ const Chating = () => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [ messages ]);
 
-    // Send Message
+    // Send Message (Text + File/Image/Video Support)
     const handleSend = (e) => {
         e.preventDefault();
         const smsText = inputText.trim();
-        if (!smsText) return;
+        if (!smsText && !selectedFile) return;
+
+        // যদি ফাইল সিলেক্ট করা থাকে, সাময়িকভাবে সেটার লোকাল প্রিভিউ ইউআরএল বা ডামি লিংক তৈরি করছি
+        // (প্রোডাকশনে ফাইলটি আগে ImgBB বা Cloudinary-তে আপলোড করে প্রাপ্ত URL এখানে পাঠাতে হবে)
+        let fileUrl = "";
+        let fileType = "";
+
+        if (selectedFile) {
+            fileUrl = URL.createObjectURL(selectedFile); // ব্রাউজারে দেখানোর জন্য লোকাল অবজেক্ট ইউআরএল
+            fileType = selectedFile.type.startsWith('video') ? 'video' : 'image';
+        }
 
         const newMessage = {
             messageId: `msg_${Date.now()}`,
             sms: smsText,
+            fileUrl: fileUrl,
+            fileType: fileType,
             senderName: user?.displayName || user?.email?.split('@')[ 0 ] || "User",
             senderEmail: user?.email,
             createdAt: new Date().toISOString()
@@ -79,6 +91,7 @@ const Chating = () => {
 
         setMessages((prevSms) => [ ...prevSms, newMessage ]);
         setInputText("");
+        setSelectedFile(null); // ফাইল পাঠানোর পর ক্লিয়ার করে দেওয়া হলো
 
         axiosSeceure.post(`/allGroups/${encodeURIComponent(groupID)}/messages`, newMessage)
             .catch(err => console.error("Failed to save message:", err));
@@ -108,14 +121,13 @@ const Chating = () => {
             .catch(err => console.error("Failed to add member:", err));
     };
 
-    // Remove Member from Group (With Confirmation Modal)
+    // Remove Member from Group
     const handleRemoveMember = (memberEmail, memberName) => {
         if (!isAdmin) {
             toast.error("Only admins can remove members!");
             return;
         }
 
-        // DaisyUI মোডাল সঠিকভাবে বন্ধ করার জন্য .close() মেথড ব্যবহার করুন
         const modalElement = document.getElementById('group_details_modal');
         if (modalElement) {
             modalElement.close();
@@ -134,11 +146,7 @@ const Chating = () => {
             if (result.isConfirmed) {
                 axiosSeceure.delete(`/allGroups/${encodeURIComponent(groupID)}/members/${encodeURIComponent(memberEmail)}`)
                     .then(() => {
-                        Swal.fire(
-                            'Removed!',
-                            'Member has been removed from the group.',
-                            'success'
-                        );
+                        Swal.fire('Removed!', 'Member has been removed from the group.', 'success');
                         fetchGroupData();
                     })
                     .catch(err => {
@@ -172,7 +180,6 @@ const Chating = () => {
         })
             .then(() => {
                 setTheme(imgUrl);
-                // toast.success("Chat theme updated successfully!");
             })
             .catch(err => console.error("Failed to update theme image:", err));
     };
@@ -192,25 +199,25 @@ const Chating = () => {
     };
 
     const presetThemes = [
-        "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
-        "https://imgs.search.brave.com/ry5VgO-OVNQWSGN1BQwF0YXTI9g9pN3xHicJi__FJcQ/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly93YWxs/cGFwZXJzLmNvbS9p/bWFnZXMvdGh1bWJu/YWlsL2NvbG9yZnVs/LWJsdXJyeS10aGVt/ZXMtbnlzOWJ4ZTNu/OTdnaGloay5qcGc",
         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
         "https://images.unsplash.com/photo-1550684848-fac1c5b4e853",
-        "https://imgs.search.brave.com/lkLvn82EBqM8ozrOgu2fWxACaT4rUgsXRBRwhOhwdPc/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMTcv/MDQ2LzczMy9zbWFs/bC9zcGVjaWFsLWhl/YXJ0LWJhY2tncm91/bmQtZm9yLXZhbGVu/dGluZS1kYXktd2l0/aC13aGl0ZS1jbG91/ZC1hbmQtdXNlZC13/aXRoLXNpbWlsYXIt/dGhlbWUtdmVjdG9y/LmpwZw",
         "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
+        "https://imgs.search.brave.com/zV-_jPaxgZem_Z0tBh8kJLnC3zNYiOx6FgXHucnSWeo/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/bWFnbmlmaWMuY29t/L2ZyZWUtcGhvdG8v/YWJzdHJhY3QtZ3Jh/ZGllbnQtYmFja2dy/b3VuZC13aXRoLWdy/YWlueS1lZmZlY3Rf/ODQ0NDMtMzA3NS5q/cGc_c2VtdD1haXNf/aHlicmlkJnc9NzQw/JnE9ODA",
+        "https://imgs.search.brave.com/NSQhkFpSYWVWhuUo1fYEAxHRp-BFwF51FKgLlQgx6Po/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9wNC1v/ZnAuc3RhdGljLnB1/Yi9mZXMvY21zLzIw/MjMvMDQvMDUveTQw/M3J0Z2xvM3BiZWlr/b3I2ZjZldXFmNzRr/dWhnNDY4MDE0LnBu/Zw",
+        "https://imgs.search.brave.com/2CL7MdGEqmX61e7kZoY9wg8xjkca6e1NYlpriAuAjqw/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9hc2lh/bi10aGVtZS1iZy1k/ZXNpZ24tZWxlbWVu/dC00NjMzMDM5OS5q/cGc",
+        "https://imgs.search.brave.com/DJMHMUCSk36gRSeBwBKOt5yPoGfy8Cr4KrWLHhBfGlU/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90aHVt/YnMuZHJlYW1zdGlt/ZS5jb20vYi9idXJz/dC0yMjQxNDE3NC5q/cGc",
+        "https://imgs.search.brave.com/I-m69A_vU6IrSFBluqwKFQhasD_ZGU5E844o3F_XIxk/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzA4LzEwLzk4Lzc3/LzM2MF9GXzgxMDk4/Nzc5M19LOGo4ZDh2/dk11T0ZaQ3RmWjd4/Zm56Y1JpU043aTM1/Uy5qcGc"
     ];
 
     return (
         <div
-            style={{
-                backgroundImage: theme ? `url(${theme})` : 'none'
-            }}
-            className="flex flex-col bg-center bg-cover h-165 border-b max-h-screen overflow-hidden border-l border-slate-200 relative"
+            style={{ backgroundImage: theme ? `url(${theme})` : 'none' }}
+            className="flex   flex-col rounded-2xl bg-center bg-cover border-2 border-whi h-164  max-h-screen overflow-hidden  relative"
         >
             {theme && <div className="absolute inset-0 bg-black/20 pointer-events-none" />}
 
             {/* ---------- Header ---------- */}
-            <div className="shrink-0 bg-slate-50 flex items-center justify-between px-6 py-3.5 border-b border-slate-200 shadow-sm z-10">
+            <div className="shrink-0 bg-white flex items-center justify-between px-6 py-3.5   shadow-sm z-10">
                 <div className="flex items-center gap-3">
                     <div className="w-11 h-11 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200 shadow-sm shrink-0">
                         {photo ? (
@@ -220,9 +227,7 @@ const Chating = () => {
                         )}
                     </div>
                     <div>
-                        <h2 className="font-bold text-slate-800 text-base leading-tight capitalize">
-                            {groupName}
-                        </h2>
+                        <h2 className="font-bold text-slate-800 text-base leading-tight capitalize">{groupName}</h2>
                         <p className="text-xs text-slate-500 font-medium mt-0.5 flex items-center gap-1.5">
                             <span>{members.length} Members</span>
                             <span>•</span>
@@ -262,18 +267,29 @@ const Chating = () => {
 
                                 <div className={`flex flex-col max-w-[70%] ${isMe ? "items-end" : "items-start"}`}>
                                     {!isMe && (
-                                        <span className="text-[11px] font-semibold text-slate-700 bg-white/80 px-2 py-0.5 rounded-full mb-1 ml-1 shadow-xs">
+                                        <span className="text-[11px] font-semibold text-slate-700 bg-white/80 px-2 py-0.5 rounded-full mb-1 ml-1 shadow-xs ">
                                             {msg?.senderName || "Unknown User"}
                                         </span>
                                     )}
 
                                     <div
-                                        className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm break-words ${isMe
-                                            ? "bg-indigo-600 text-white rounded-br-none"
-                                            : "bg-white text-slate-800 border border-slate-200/80 rounded-bl-none"
+                                        className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm border-none break-words ${isMe
+                                                ? "bg-indigo-600 text-white rounded-br-none"
+                                                : "bg-white text-slate-800 border border--200/80 rounded-bl-none"
                                             }`}
                                     >
-                                        <p>{msg?.sms || ""}</p>
+                                        {/* যদি ছবি থাকে */}
+                                        {msg?.fileUrl && msg?.fileType === 'image' && (
+                                            <img src={msg.fileUrl} alt="Uploaded" className="max-w-xs rounded-xl h-20 w-auto mb-2 object-cover" />
+                                        )}
+                                        {/* যদি ভিডিও থাকে */}
+                                        {msg?.fileUrl && msg?.fileType === 'video' && (
+                                            <video controls className="max-w-xs rounded-xl mb-2">
+                                                <source src={msg.fileUrl} type="video/mp4" />
+                                            </video>
+                                        )}
+                                        {/* টেক্সট মেসেজ */}
+                                        {msg?.sms && <p>{msg.sms}</p>}
                                     </div>
                                     <span className="text-[10px] text-slate-600 bg-white/70 px-1.5 py-0.5 rounded-md mt-1">
                                         {formatTime(msg?.createdAt)}
@@ -287,195 +303,79 @@ const Chating = () => {
             </div>
 
             {/* ---------- Input Footer ---------- */}
-            <form onSubmit={handleSend} className="shrink-0 p-4 bg-slate-50 border-t border-slate-200 flex items-center gap-2 relative z-10 shadow-md">
-                <button
-                    type="button"
-                    className="p-2.5 text-slate-400 hover:text-indigo-600 rounded-full transition-colors"
-                >
-                    <FiPaperclip className="w-6 h-6" />
-                </button>
+            <form onSubmit={handleSend} className="shrink-0 p-4 bg-white border-t  flex flex-col gap-2 relative z-10 shadow-md">
 
-                <input
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Write a message..."
-                    className="flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-indigo-500 transition-all text-slate-800 placeholder-slate-400"
-                />
+                {selectedFile && (
+                    <div className="flex items-center justify-between bg-indigo-50 px-3 py-1.5 rounded-xl border text-xs text-indigo-700">
+                        <span className="truncate">📎 Attached: {selectedFile.name}</span>
+                        <button
+                            type="button"
+                            onClick={() => setSelectedFile(null)}
+                            className="text-red-500 hover:text-red-700 font-bold ml-2 cursor-pointer"
+                        >
+                            <FiX size={14} />
+                        </button>
+                    </div>
+                )}
 
-                <button
-                    type="submit"
-                    disabled={!inputText.trim()}
-                    className={`p-2.5 rounded-xl text-white shadow-sm transition-all ${inputText.trim()
-                        ? "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
-                        : "bg-indigo-300 cursor-not-allowed"
-                        }`}
-                >
-                    <FiSend className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2 w-full">
+                    <label className="p-2.5 text-slate-400 hover:text-indigo-600 rounded-full transition-colors cursor-pointer">
+                        <FiPaperclip className="w-6 h-6" />
+                        <input
+                            type="file"
+                            accept="image/*,video/*"
+                            className="hidden"
+                            onChange={(e) => {
+                                const file = e.target.files[ 0 ];
+                                if (file) {
+                                    setSelectedFile(file);
+                                    toast.success(`Selected: ${file.name}`);
+                                }
+                                // একই ফাইল পরপর দুইবার সিলেক্ট করলে যেন সমস্যা না হয়, তাই ভ্যালু রিসেট করে দিলাম
+                                e.target.value = "";
+                            }}
+                        />
+                    </label>
+
+                    <input
+                        type="text"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder="Write a message..."
+                        className="flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:bg-white focus:border-indigo-500 transition-all text-slate-800 placeholder-slate-400"
+                    />
+
+                    <button
+                        type="submit"
+                        disabled={!inputText.trim() && !selectedFile}
+                        className={`p-2.5 rounded-xl text-white shadow-sm transition-all ${(inputText.trim() || selectedFile)
+                                ? "bg-indigo-600 bg-slate-100 hover:bg-indigo-700 cursor-pointer"
+                                : "bg-indigo-300 cursor-not-allowed"
+                            }`}
+                    >
+                        <FiSend className="w-5 h-5" />
+                    </button>
+                </div>
             </form>
 
-            {/* ---------- Modal Details ---------- */}
-            <dialog id="group_details_modal" className="modal modal-bottom sm:modal-middle">
-                <div className="modal-box bg-white p-6 scrollbar-none rounded-3xl shadow-2xl max-w-md text-slate-800">
-
-                    <form method="dialog">
-                        <button className="btn border-none btn-sm btn-circle btn-ghost absolute right-4 top-4 text-slate-400 hover:bg-red-600 hover:text-white">
-                            <FiX size={18} />
-                        </button>
-                    </form>
-
-                    {/* Group Profile Overview */}
-                    <div className="flex flex-col items-center border-b border-slate-100 pb-5 mb-5">
-                        <div className="w-20 h-20 rounded-full bg-indigo-50 text-indigo-600 border-2 border-indigo-200 flex items-center justify-center overflow-hidden mb-3 shadow-md">
-                            {photo ? (
-                                <img src={getProfileImage(photo)} alt={groupName} className="w-full h-full object-cover" />
-                            ) : (
-                                <FiCode size={32} />
-                            )}
-                        </div>
-                        <h3 className="font-bold text-slate-900 text-lg capitalize">{groupName}</h3>
-                        <p className="text-xs text-slate-500">{members.length} Members</p>
-                    </div>
-
-                    {/* গ্রুপের যেকোনো মেম্বার এখন গ্রুপ ফটো আপডেট করতে পারবে */}
-                    <form onSubmit={handleUpdatePhoto} className="mb-5 bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
-                            <FiImage /> Update Group Photo URL
-                        </label>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={newPhotoUrl}
-                                onChange={(e) => setNewPhotoUrl(e.target.value)}
-                                placeholder="Paste new image URL..."
-                                className="flex-1 px-3 py-1.5 bg-white border border-gray-300 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-800 placeholder-slate-400"
-                            />
-                            <button
-                                type="submit"
-                                disabled={!newPhotoUrl.trim()}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold text-white transition-all ${newPhotoUrl.trim()
-                                        ? "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
-                                        : "bg-indigo-300 cursor-not-allowed"
-                                    }`}
-                            >
-                                Update
-                            </button>
-                        </div>
-                    </form>
-
-                    {/* Chat Theme Wallpaper */}
-                    <div className="mb-5">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-                            <FiImage /> Chat Theme / Wallpaper
-                        </label>
-                        <div className="flex gap-2.5 scrollbar-none overflow-x-auto py-1">
-                            {presetThemes.map((imgUrl, idx) => (
-                                <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => handleUpdateThemeImage(imgUrl)}
-                                    className={`h-12 w-12 rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 shrink-0 shadow-sm ${theme === imgUrl ? 'border-indigo-600 ring-2 ring-indigo-200' : 'border-slate-200'}`}
-                                >
-                                    <img src={imgUrl} alt="Theme option" className="h-full w-full object-cover" />
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* 2. Available People to Add (Admin Only) */}
-                    {isAdmin && (
-                        <div className="mb-5">
-                            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-                                <FiUserPlus /> Add People to Group
-                            </label>
-                            <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
-                                {allPeople
-                                    .filter(m => !members.some(mem => mem.email === m.email)) // ✅ যারা অলরেডি মেম্বার, তারা ফিল্টার হয়ে বাদ যাবে
-                                    .map((m, index) => {
-                                        const imgSrc = getProfileImage(m?.imageName);
-
-                                        return (
-                                            <div key={m?._id || index} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-                                                <div className="flex items-center gap-2 truncate">
-                                                    <div className="w-8 h-8 rounded-full bg-indigo-500 text-white text-xs flex items-center justify-center font-bold overflow-hidden shrink-0">
-                                                        {imgSrc ? (
-                                                            <img
-                                                                src={imgSrc}
-                                                                alt={m?.name || "User"}
-                                                                className="w-full h-full object-cover"
-                                                                onError={(e) => { e.target.style.display = 'none'; }}
-                                                            />
-                                                        ) : null}
-                                                        <span>{!imgSrc && (m?.name ? m.name.charAt(0).toUpperCase() : "U")}</span>
-                                                    </div>
-                                                    <div className="truncate">
-                                                        <p className="text-xs font-semibold text-slate-800 leading-tight">{m?.name || "User"}</p>
-                                                        <p className="text-[10px] text-slate-400">{m?.email}</p>
-                                                    </div>
-                                                </div>
-
-                                                <button
-                                                    onClick={() => handleDirectAddMember(m)}
-                                                    className="text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-                                                >
-                                                    + Add
-                                                </button>
-                                            </div>
-                                        );
-                                    })}
-
-                                {/* যদি সব ইউজার গ্রুপে যুক্ত থাকে, তবে একটি ছোট মেসেজ দেখাতে পারেন */}
-                                {allPeople.filter(m => !members.some(mem => mem.email === m.email)).length === 0 && (
-                                    <p className="text-[11px] text-slate-400 text-center py-2">No more users available to add.</p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-
-
-                    {/* 3. Current Group Members List (Admin can delete members) */}
-                    <div>
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-                            <FiUsers /> Group Members
-                        </label>
-                        <div className="max-h-36 overflow-y-auto space-y-2 pr-1">
-                            {members.map((m, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
-                                    <div className="flex items-center gap-2 truncate">
-                                        <img className='h-8 w-8 rounded-full bg-gray-300 object-cover' src={getProfileImage(m.imageName)} alt="" />
-                                        <div className="truncate">
-                                            <p className="text-xs font-semibold text-slate-800 leading-tight">{m?.name || "Member"}</p>
-                                            <p className="text-[10px] text-slate-400">{m?.email}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                        {m?.role === 'admin' && (
-                                            <span className="text-[9px] bg-indigo-100 text-indigo-600 font-bold px-2 py-0.5 rounded-full">
-                                                Admin
-                                            </span>
-                                        )}
-
-                                        {/* Admin can delete any member except maybe themselves if desired */}
-                                        {isAdmin && m?.email !== user?.email && (
-                                            <button
-                                                onClick={() => handleRemoveMember(m.email)}
-                                                className="p-1.5 bg-red-100 hover:bg-red-600 text-red-600 hover:text-white rounded-lg transition-colors"
-                                                title="Remove Member"
-                                            >
-                                                <FiTrash2 size={14} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                </div>
-            </dialog>
+            {/* ---------- Modal Component ---------- */}
+            <GroupDetailsModal
+                groupName={groupName}
+                photo={photo}
+                members={members}
+                allPeople={allPeople}
+                isAdmin={isAdmin}
+                theme={theme}
+                newPhotoUrl={newPhotoUrl}
+                setNewPhotoUrl={setNewPhotoUrl}
+                handleUpdatePhoto={handleUpdatePhoto}
+                handleUpdateThemeImage={handleUpdateThemeImage}
+                handleDirectAddMember={handleDirectAddMember}
+                handleRemoveMember={handleRemoveMember}
+                getProfileImage={getProfileImage}
+                presetThemes={presetThemes}
+                user={user}
+            />
 
             <ToastContainer
                 position="top-center"

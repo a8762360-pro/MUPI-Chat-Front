@@ -1,48 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Eye, EyeOff, LogIn, GraduationCap, Presentation, MessagesSquare } from "lucide-react";
 import { NavLink, useNavigate } from "react-router";
-import { useContext } from "react";
-import { AuthContext } from '../AuthContext/AuthContext'
+import { AuthContext } from '../AuthContext/AuthContext';
 import useAxiosSecure from "../Hook/UseAxiosSeceure";
+import { Bounce, toast, ToastContainer } from "react-toastify";
 
 const Login = () => {
     const [ role, setRole ] = useState("student");
-    const [ id, setId ] = useState("");
+    const [ show, setShow ] = useState(false); // ✅ পাসওয়ার্ড হাইড/শো এর জন্য স্টেট যুক্ত করা হলো
     const [ error, setError ] = useState("");
-    const { EmailPassLogin } = useContext(AuthContext)
+    const { EmailPassLogin } = useContext(AuthContext);
     const navigate = useNavigate();
     const axosSeceure = useAxiosSecure();
 
-
     const handleSubmit = (e) => {
         e.preventDefault();
-        // const id = id;
-        // const role = role;
+        setError(""); // রিসেট এরর
+
         const email = e.target.email.value;
         const password = e.target.password.value;
+
+        if (!email || !password) {
+            setError("Email and Password are required!");
+            return;
+        }
+
         EmailPassLogin(email, password)
             .then(res => {
-                const user = res.user
-                const token = user.accessToken;
-                console.log(user, token)
+                const user = res.user;
 
-                alert("your login successfull")
-                navigate("/inbox")
-                // localStorage.setItem("IDtoken", token);
-                // console.log(token)
+                // ✅ সফল টোস্ট নোটিফিকেশন
+                toast.success('Your login was successful!', {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    theme: "light",
+                    transition: Bounce,
+                });
+
+                // ✅ ১.৫ সেকেন্ড ডিলে দিয়ে নেভিগেট করা যেন ইউজার টোস্টটি দেখতে পায়
+                setTimeout(() => {
+                    navigate("/inbox");
+                }, 1500);
             })
             .catch(err => {
-                console.log(err)
-                alert(err.message)
-            })
-        console.log(email, password)
-
+                console.error(err);
+                setError(err.message);
+                toast.error(err.message || "Failed to log in!");
+            });
     };
-
-    const roles = [
-        { key: "student", label: "Student", icon: GraduationCap },
-        { key: "teacher", label: "Teacher", icon: Presentation },
-    ];
 
     return (
         <div
@@ -92,13 +101,10 @@ const Login = () => {
                     <p className="mt-1 text-stone-500">আপনার institute account দিয়ে ঢুকুন।</p>
 
                     <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
-
-
-
-                        {/* ID */}
+                        {/* Email */}
                         <div>
-                            <label htmlFor="id" className="mb-1.5 block text-sm font-medium">
-                                <h1>Email</h1>
+                            <label className="mb-1.5 block text-sm font-medium">
+                                Email
                             </label>
                             <input
                                 name="email"
@@ -120,7 +126,7 @@ const Login = () => {
                                 <input
                                     id="password"
                                     name="password"
-                                    type="password"
+                                    type={show ? "text" : "password"} // ✅ পাসওয়ার্ড শো/হাইড লজিক
                                     placeholder="Enter your right password"
                                     className="w-full rounded-xl border border-stone-300 bg-white py-3 pl-4 pr-12 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/20"
                                 />
@@ -129,11 +135,10 @@ const Login = () => {
                                     onClick={() => setShow(!show)}
                                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 text-stone-500 hover:bg-stone-100"
                                 >
+                                    {show ? <EyeOff size={18} /> : <Eye size={18} />} {/* ✅ আইকন যুক্ত করা হলো */}
                                 </button>
                             </div>
                         </div>
-
-
 
                         {error && (
                             <p role="alert" className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
@@ -143,7 +148,7 @@ const Login = () => {
 
                         <button
                             type="submit"
-                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 py-3 font-semibold text-white transition-colors hover:bg-emerald-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 py-3 font-semibold text-white transition-colors hover:bg-emerald-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 cursor-pointer"
                         >
                             <LogIn size={18} />
                             Log in
@@ -158,6 +163,20 @@ const Login = () => {
                     </p>
                 </div>
             </section>
+
+            <ToastContainer
+                position="top-center"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Bounce}
+            />
         </div>
     );
 };

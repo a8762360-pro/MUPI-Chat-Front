@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router';
 import UseAuth from '../../Hook/UseAuth';
 import useAxiosSecure from '../../Hook/UseAxiosSeceure';
-import Navigate from './Navigate/Navigate';
 import Profile from './Profile/Profile';
 // import Profile from './Profile/Profile';
 
@@ -30,7 +29,7 @@ const Inbox = () => {
     );
 
     return (
-        <aside className="h-[calc(100vh-5rem)] max-h-screen bg-slate-50 flex flex-col rounde border border-slate-200/80  backdrop-blur-xl p-4 shadow-xl shadow-slate-100 transition-all">
+        <aside className="h-[calc(100vh-5rem)] max-h-screen bg-white flex flex-col rounde rounded-2xl  backdrop-blur-xl p-4 shadow-xl shadow-slate-100 transition-all">
 
             {/* Header Section */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
@@ -64,7 +63,7 @@ const Inbox = () => {
             </div>
 
             {/* Group List Container */}
-            <div className="flex-1 space-y-2  overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
+            <div className="flex-1 space-y-2  overflow-y-auto  scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
                 {filteredGroups.length > 0 ? (
                     filteredGroups.map((d, index) => (
                         <NavLink
@@ -72,7 +71,7 @@ const Inbox = () => {
                             key={d._id || index}
                             className={({ isActive }) =>
                                 `group relative flex items-center gap-3.5 p-3 rounded-2xl transition-all duration-300 ${isActive
-                                    ? 'bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-lg shadow-emerald-600/25 scale-[1.01]'
+                                    ? 'bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-lg shadow-emerald-600/25 scale-[1.0]'
                                     : 'hover:bg-slate-50 text-slate-700 hover:shadow-sm'
                                 }`
                             }
@@ -81,7 +80,7 @@ const Inbox = () => {
                                 <>
                                     {/* Active Indicator Bar */}
                                     {isActive && (
-                                        <span className="absolute -left-1 top-1/2 h-6 w-1.5 -translate-y-1/2 rounded-r-full bg-amber-400 shadow-sm" />
+                                        <span className="absolute -left-1 top-1/2 h-6 w-1.5 -translate-y-1/2 rounded-r-full amber-400 shadow-sm" />
                                     )}
 
                                     {/* Group Avatar */}

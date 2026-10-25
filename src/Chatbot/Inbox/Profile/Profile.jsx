@@ -5,14 +5,13 @@ import { NavLink } from 'react-router';
 
 const Profile = () => {
     const { user, logOut } = UseAuth();
-    console.log("User Profile Data:", user);
-
+    // console.log("User Profile Data:", user);
     return (
         <div className="flex items-center h-10">
             {/* প্রোফাইল বাটন যা মডাল ওপেন করবে */}
             <NavLink 
                 onClick={() => document.getElementById('user_profile_modal').showModal()}
-                className='flex items-center gap-2 text-black   rounded-full bg--600  transition hover:shadow-xl'
+                className='flex items-center border border-amber-200 gap-2 text-black   rounded-full bg--600  transition hover:shadow-xl'
             >
                 {user?.imageName || user?.photoURL ? (
                     <img 
