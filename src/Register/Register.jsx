@@ -4,7 +4,8 @@ import { FaGraduationCap, FaChalkboardTeacher } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router";
 import { AuthContext } from "../AuthContext/AuthContext";
 import axios from "axios";
-import { toast } from "react-toastify"; // 🟢 react-toastify ইমপোর্ট করা হলো
+import { toast } from "react-toastify";
+import mupiLogo from "../assets/mupi.webp";
 
 const DEPARTMENTS = [
     "Computer Science & Technology",
@@ -13,6 +14,8 @@ const DEPARTMENTS = [
     "Electronics Technology",
     "Mechanical Technology",
     "Power Technology",
+    "Electro Medical Technology",
+
 ];
 
 const SEMESTERS = [ "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th" ];
@@ -45,7 +48,7 @@ const Register = () => {
         if (!agree) {
             const errMsg = "Obosshoi niyamabolite sommot hon.";
             setError(errMsg);
-            toast.error(errMsg); // 🟢 টোস্ট নোটিফিকেশন
+            toast.error(errMsg); //
             return;
         }
 
@@ -62,7 +65,7 @@ const Register = () => {
         if (password !== confirmpassword) {
             const errMsg = "Password no matching";
             setError(errMsg);
-            toast.error(errMsg); // 🟢 টোস্ট নোটিফিকেশন
+            toast.error(errMsg);
             return;
         }
 
@@ -79,41 +82,42 @@ const Register = () => {
 
         // create account firebase
         createUser(email, password)
-            .then(res => {
+            .then((res) => {
                 const user = res.user;
 
                 if (user) {
-                    // 🟢 সফলভাবে ফায়ারবেস অ্যাকাউন্ট খোলার পর টোস্ট
                     toast.success("Firebase account created successfully!");
 
                     const userFullData = {
                         uid: user.uid,
                         ...newUserData,
-                        createdAt: new Date()
+                        createdAt: new Date(),
                     };
 
                     // send user data to database
-                    axios.post("http://localhost:3000/users", userFullData)
-                        .then(dbRes => {
-                            // 🟢 ডাটাবেজে সফলভাবে সেভ হওয়ার পর টোস্ট
-                            toast.success("Your data was successfully submitted to the database!");
+                    axios
+                        .post("http://localhost:3000/users", userFullData)
+                        .then((dbRes) => {
+                            toast.success(
+                                "Your data was successfully submitted to the database!",
+                            );
                             e.target.reset();
                             setAgree(false);
                             navigate("/inbox");
                         })
-                        .catch(err => {
+                        .catch((err) => {
                             console.error("Database Save Error:", err);
                             const errMsg = "Failed to save user in database: " + err.message;
                             setError(errMsg);
-                            toast.error(errMsg); // 🟢 ডাটাবেজ এরর টোস্ট
+                            toast.error(errMsg);
                         });
                 }
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error("Firebase Auth Error:", err);
                 const errMsg = "Firebase account creation failed: " + err.message;
                 setError(errMsg);
-                toast.error(errMsg); // 🟢 ফায়ারবেস এরর টোস্ট
+                toast.error(errMsg);
             });
     };
 
@@ -136,28 +140,44 @@ const Register = () => {
             {/* ---------- Left: branding (desktop only) ---------- */}
             <section className="hidden flex-1 flex-col justify-between bg-emerald-900 p-12 text-emerald-50 lg:flex">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-500 text-xl font-bold text-emerald-950">
-                        M
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl  text-xl font-bold ">
+                        <NavLink to="/">
+                            <img className="rounded-xl" src={mupiLogo} alt="" />
+                        </NavLink>
                     </div>
                     <div className="leading-tight">
-                        <p className="text-lg font-semibold">Munshigonj Polytechnic Institute</p>
-                        <p className="text-sm text-emerald-200">মুন্সীগঞ্জ পলিটেকনিক ইনস্টিটিউট</p>
+                        <p className="text-lg font-semibold">
+                            Munshigonj Polytechnic Institute
+                        </p>
+                        <p className="text-sm text-emerald-200">
+                            মুন্সীগঞ্জ পলিটেকনিক ইনস্টিটিউট
+                        </p>
                     </div>
                 </div>
 
                 <div className="max-w-md">
-                    <h2 className="text-4xl font-bold leading-tight">আমাদের ক্যাম্পাসে যোগ দিন।</h2>
+                    <h2 className="text-4xl font-bold leading-tight">
+                        আমাদের ক্যাম্পাসে যোগ দিন।
+                    </h2>
                     <ul className="mt-8 space-y-4">
                         {perks.map((p) => (
-                            <li key={p} className="flex items-start gap-3 text-lg text-emerald-100">
-                                <FiCheckCircle size={22} className="mt-0.5 shrink-0 text-amber-400" />
+                            <li
+                                key={p}
+                                className="flex items-start gap-3 text-lg text-emerald-100"
+                            >
+                                <FiCheckCircle
+                                    size={22}
+                                    className="mt-0.5 shrink-0 text-amber-400"
+                                />
                                 {p}
                             </li>
                         ))}
                     </ul>
                 </div>
 
-                <p className="text-sm text-emerald-300">© Munshigonj Polytechnic Institute</p>
+                <p className="text-sm text-emerald-300">
+                    © Munshigonj Polytechnic Institute
+                </p>
             </section>
 
             {/* ---------- Right: form ---------- */}
@@ -169,14 +189,16 @@ const Register = () => {
                         </div>
                         <p className="font-semibold leading-tight">
                             Munshigonj Polytechnic
-                            <span className="block text-xs font-normal text-stone-500">Institute Chat</span>
+                            <span className="block text-xs font-normal text-stone-500">
+                                Institute Chat
+                            </span>
                         </p>
                     </div>
 
                     <h1 className="text-3xl font-bold text-emerald-950">Account খুলুন</h1>
                     <p className="mt-1 text-stone-500">কয়েকটা তথ্য দিলেই হয়ে যাবে।</p>
 
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-4" >
+                    <form onSubmit={handleSubmit} className="mt-8 space-y-4">
                         {/* Role toggle */}
                         <div className="grid grid-cols-2 gap-1 rounded-xl bg-stone-200 p-1">
                             {roles.map(({ key, label, icon: Icon }) => (
@@ -184,7 +206,9 @@ const Register = () => {
                                     key={key}
                                     type="button"
                                     onClick={() => setStatus(key)}
-                                    className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${status === key ? "bg-white text-emerald-900 shadow-sm" : "text-stone-500 hover:text-stone-700"
+                                    className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${status === key
+                                            ? "bg-white text-emerald-900 shadow-sm"
+                                            : "text-stone-500 hover:text-stone-700"
                                         }`}
                                 >
                                     <Icon size={16} />
@@ -194,22 +218,51 @@ const Register = () => {
                         </div>
 
                         <Field label="Full Name" id="name">
-                            <input id="name" required name="name" autoComplete="name" placeholder="Enter your name" className={inputCls} />
+                            <input
+                                id="name"
+                                required
+                                name="name"
+                                autoComplete="name"
+                                placeholder="Enter your name"
+                                className={inputCls}
+                            />
                         </Field>
 
-                        <Field label={status === "student" ? "Roll number" : "Teacher ID"} id="id">
-                            <input id="id" required name="uid" placeholder={status === "student" ? "Enter your roll" : "Enter your ID"} className={inputCls} />
+                        <Field
+                            label={status === "student" ? "Roll number" : "Teacher ID"}
+                            id="id"
+                        >
+                            <input
+                                id="id"
+                                required
+                                name="uid"
+                                placeholder={
+                                    status === "student" ? "Enter your roll" : "Enter your ID"
+                                }
+                                className={inputCls}
+                            />
                         </Field>
 
                         <Field label="Image" id="image">
-                            <input type="text" placeholder="Enter your photo URL" required id="image" name="image" className={inputCls} />
+                            <input
+                                type="text"
+                                placeholder="Enter your photo URL"
+                                required
+                                id="image"
+                                name="image"
+                                className={inputCls}
+                            />
                         </Field>
 
-                        <div className={`grid gap-4 ${status === "student" ? "sm:grid-cols-2" : ""}`}>
+                        <div
+                            className={`grid gap-4 ${status === "student" ? "sm:grid-cols-2" : ""}`}
+                        >
                             <Field label="Department" id="department">
                                 <select id="department" name="department" className={inputCls}>
                                     {DEPARTMENTS.map((d) => (
-                                        <option key={d} value={d}>{d}</option>
+                                        <option key={d} value={d}>
+                                            {d}
+                                        </option>
                                     ))}
                                 </select>
                             </Field>
@@ -218,7 +271,9 @@ const Register = () => {
                                 <Field label="Semester" id="semester">
                                     <select id="semester" name="semester" className={inputCls}>
                                         {SEMESTERS.map((s) => (
-                                            <option key={s} value={s}>{s} Semester</option>
+                                            <option key={s} value={s}>
+                                                {s} Semester
+                                            </option>
                                         ))}
                                     </select>
                                 </Field>
@@ -226,7 +281,15 @@ const Register = () => {
                         </div>
 
                         <Field label="Email" id="email">
-                            <input id="email" required name="email" type="email" autoComplete="email" placeholder="Enter your email" className={inputCls} />
+                            <input
+                                id="email"
+                                required
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                placeholder="Enter your email"
+                                className={inputCls}
+                            />
                         </Field>
 
                         <div className="grid gap-4 sm:grid-cols-2">
@@ -277,7 +340,10 @@ const Register = () => {
                         </label>
 
                         {error && (
-                            <p role="alert" className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+                            <p
+                                role="alert"
+                                className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700"
+                            >
                                 {error}
                             </p>
                         )}
@@ -293,7 +359,10 @@ const Register = () => {
 
                     <p className="mt-8 text-center text-sm text-stone-500">
                         আগে থেকেই account আছে?{" "}
-                        <NavLink to="/login" className="font-semibold text-emerald-800 hover:underline">
+                        <NavLink
+                            to="/login"
+                            className="font-semibold text-emerald-800 hover:underline"
+                        >
                             Log in করুন
                         </NavLink>
                     </p>

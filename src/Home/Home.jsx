@@ -1,9 +1,12 @@
 import React from "react";
 import UseAuth from "../Hook/UseAuth";
+import { useNavigate } from "react-router";
+import emptyPP from '../assets/emptyPP.webp'
 
 const Home = () => {
-    const {user, logOut} = UseAuth();
+    const { user, logOut } = UseAuth();
     console.log(user)
+    const navigate = useNavigate();
     const items = [
         { title: "Chat", text: "বন্ধু আর শিক্ষকদের সাথে কথা বলুন।" },
         { title: "Notice", text: "institute এর সব নোটিশ এক জায়গায়।" },
@@ -21,20 +24,22 @@ const Home = () => {
                 <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
                     <span className="text-lg font-semibold">Munshigonj Polytechnic Institute</span>
                     <div className="flex items-center gap-4 text-sm">
+                        <img className="h-10 w-10 rounded-full" src={user?.imageName || emptyPP } alt=""/>
                         {
-                            user? <button onClick={handleLogout} className="rounded-lg bg-red-500 text-white px-4 py-2 font-semibold  hover:bg-red-700">Log out</button>: <a href="/login" className="rounded-lg bg-blue-500 text-white px-4 py-2 font-semibold  hover:bg-blue-700">Log in</a>
+                            user ? <button onClick={handleLogout} className="rounded-lg bg-red-500 text-white px-4 py-2 font-semibold  hover:bg-red-700">Log out</button> : <a href="/login" className="rounded-lg bg-blue-500 text-white px-4 py-2 font-semibold  hover:bg-blue-700">Log in</a>
                         }
-                        
-                        <a href="/register" className="rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-700">
-                            Register
-                        </a>
+                        {
+                            user ? "" : <a href="/register" className="rounded-lg bg-white px-4 py-2 font-semibold text-black hover:bg-gray-300">
+                                Register
+                            </a>
+                        }
                     </div>
                 </div>
             </header>
 
             {/* Hero */}
             <section className="mx-auto max-w-5xl px-5 py-20 text-center">
-                <h1 className="text-4xl font-bold text-emerald-950 md:text-5xl">Institute Chat এ স্বাগতম</h1>
+                <h1 className="text-4xl font-bold text-emerald-950 md:text-5xl">MUPI Circle এ স্বাগতম</h1>
                 <p className="mx-auto mt-4 max-w-xl text-lg text-stone-600">
                     মুন্সীগঞ্জ পলিটেকনিক ইনস্টিটিউটের ছাত্র ও শিক্ষকদের নিজস্ব chat app।
                 </p>

@@ -14,6 +14,7 @@ const Chating = () => {
     const groupID = decodeURIComponent(rawGroupID || "");
 
     const [ messages, setMessages ] = useState([]);
+    console.log(messages)
     const [ members, setMembers ] = useState([]);
     const [ inputText, setInputText ] = useState("");
     const [ selectedFile, setSelectedFile ] = useState(null); // ✅ ফাইল বা প্রিভিউ রাখার জন্য স্টেট
@@ -109,7 +110,7 @@ const Chating = () => {
             newMember: {
                 name: targetUser.name,
                 email: targetUser.email,
-                role: targetUser.role || "student",
+                role: "member",
                 imageName: targetUser.imageName || ""
             },
             groupName: groupName
@@ -199,6 +200,7 @@ const Chating = () => {
     };
 
     const presetThemes = [
+        "https://imgs.search.brave.com/75vDDI-ZoInfBwXdKm1yfPnlqy6Hptk92a_eyRsx2VM/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wNjcv/MzY3Lzg1NC9zbWFs/bC9zb2Z0LWNoYW9z/LW9mLWNvbG9ycy1p/bi1kaWdpdGFsLXdh/dGVyY29sb3ItYmFj/a2dyb3VuZC1hYnN0/cmFjdC10aGVtZS1m/cmVlLXZlY3Rvci5q/cGc",
         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
         "https://images.unsplash.com/photo-1550684848-fac1c5b4e853",
         "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
@@ -219,13 +221,15 @@ const Chating = () => {
             {/* ---------- Header ---------- */}
             <div className="shrink-0 bg-white flex items-center justify-between px-6 py-3.5   shadow-sm z-10">
                 <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200 shadow-sm shrink-0">
+                    <button
+                        onClick={() => document.getElementById('group_details_modal').showModal()}
+                        className="w-11 h-11 cursor-pointer bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200 shadow-sm shrink-0">
                         {photo ? (
                             <img src={getProfileImage(photo)} alt={groupName} className="w-full h-full object-cover" />
                         ) : (
                             <FiCode className="w-6 h-6" />
                         )}
-                    </div>
+                    </button>
                     <div>
                         <h2 className="font-bold text-slate-800 text-base leading-tight capitalize">{groupName}</h2>
                         <p className="text-xs text-slate-500 font-medium mt-0.5 flex items-center gap-1.5">
@@ -237,14 +241,7 @@ const Chating = () => {
                             </span>
                         </p>
                     </div>
-                </div>
-
-                <button
-                    onClick={() => document.getElementById('group_details_modal').showModal()}
-                    className="p-2 text-slate-500 hover:text-indigo-600 rounded-xl hover:bg-slate-100 transition-all active:scale-95"
-                >
-                    <FiMoreVertical className="w-5 h-5" />
-                </button>
+                </div>         
             </div>
 
             {/* ---------- Chat Body ---------- */}
@@ -274,8 +271,8 @@ const Chating = () => {
 
                                     <div
                                         className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm border-none break-words ${isMe
-                                                ? "bg-indigo-600 text-white rounded-br-none"
-                                                : "bg-white text-slate-800 border border--200/80 rounded-bl-none"
+                                            ? "bg-indigo-600 text-white rounded-br-none"
+                                            : "bg-white text-slate-800 border border--200/80 rounded-bl-none"
                                             }`}
                                     >
                                         {/* যদি ছবি থাকে */}
@@ -349,8 +346,8 @@ const Chating = () => {
                         type="submit"
                         disabled={!inputText.trim() && !selectedFile}
                         className={`p-2.5 rounded-xl text-white shadow-sm transition-all ${(inputText.trim() || selectedFile)
-                                ? "bg-indigo-600 bg-slate-100 hover:bg-indigo-700 cursor-pointer"
-                                : "bg-indigo-300 cursor-not-allowed"
+                            ? "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
+                            : "bg-indigo-300 cursor-not-allowed"
                             }`}
                     >
                         <FiSend className="w-5 h-5" />

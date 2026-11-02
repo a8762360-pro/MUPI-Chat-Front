@@ -1,13 +1,21 @@
 import React, { useState, useContext } from "react";
-import { Eye, EyeOff, LogIn, GraduationCap, Presentation, MessagesSquare } from "lucide-react";
+import {
+    Eye,
+    EyeOff,
+    LogIn,
+    GraduationCap,
+    Presentation,
+    MessagesSquare,
+} from "lucide-react";
 import { NavLink, useNavigate } from "react-router";
-import { AuthContext } from '../AuthContext/AuthContext';
+import { AuthContext } from "../AuthContext/AuthContext";
 import useAxiosSecure from "../Hook/UseAxiosSeceure";
 import { Bounce, toast, ToastContainer } from "react-toastify";
+import mupiLogo from "../assets/mupi.webp";
 
 const Login = () => {
     const [ role, setRole ] = useState("student");
-    const [ show, setShow ] = useState(false); // ✅ পাসওয়ার্ড হাইড/শো এর জন্য স্টেট যুক্ত করা হলো
+    const [ show, setShow ] = useState(false);
     const [ error, setError ] = useState("");
     const { EmailPassLogin } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -26,11 +34,10 @@ const Login = () => {
         }
 
         EmailPassLogin(email, password)
-            .then(res => {
+            .then((res) => {
                 const user = res.user;
 
-                // ✅ সফল টোস্ট নোটিফিকেশন
-                toast.success('Your login was successful!', {
+                toast.success("Your login was successful!", {
                     position: "top-center",
                     autoClose: 3000,
                     hideProgressBar: false,
@@ -41,12 +48,11 @@ const Login = () => {
                     transition: Bounce,
                 });
 
-                // ✅ ১.৫ সেকেন্ড ডিলে দিয়ে নেভিগেট করা যেন ইউজার টোস্টটি দেখতে পায়
                 setTimeout(() => {
                     navigate("/inbox");
                 }, 1500);
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
                 setError(err.message);
                 toast.error(err.message || "Failed to log in!");
@@ -61,14 +67,20 @@ const Login = () => {
             {/* ---------- Left: branding (desktop only) ---------- */}
             <section className="hidden flex-1 flex-col justify-between bg-emerald-900 p-12 text-emerald-50 lg:flex">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-500 text-xl font-bold text-emerald-950">
-                        M
+                    <div className="flex h-12 w-12 items-center  justify-center   text-xl font-bold ">
+                        <NavLink to="/">
+                            <img className="rounded-xl" src={mupiLogo} alt="MUPI Logo" />
+                        </NavLink>
                     </div>
                     <div className="leading-tight">
-                        <p className="text-lg font-semibold">Munshigonj Polytechnic Institute</p>
-                        <p className="text-sm text-emerald-200">মুন্সীগঞ্জ পলিটেকনিক ইনস্টিটিউট</p>
+                        <p className="text-lg font-semibold">
+                            Munshigonj Polytechnic Institute
+                        </p>
+                        <p className="text-sm text-emerald-200">
+                            মুন্সীগঞ্জ পলিটেকনিক ইনস্টিটিউট
+                        </p>
                     </div>
-                </div>
+                </div>F
 
                 <div className="max-w-md">
                     <MessagesSquare size={44} className="mb-6 text-amber-400" />
@@ -76,11 +88,14 @@ const Login = () => {
                         পুরো ক্যাম্পাস, এক জায়গায় কথা বলুন।
                     </h2>
                     <p className="mt-4 text-lg leading-relaxed text-emerald-100">
-                        Notice, department group আর শিক্ষকদের সাথে সরাসরি যোগাযোগ, সবকিছু একটাই app এ।
+                        Notice, department group আর শিক্ষকদের সাথে সরাসরি যোগাযোগ, সবকিছু
+                        একটাই app এ।
                     </p>
                 </div>
 
-                <p className="text-sm text-emerald-300">© Munshigonj Polytechnic Institute</p>
+                <p className="text-sm text-emerald-300">
+                    © Munshigonj Polytechnic Institute
+                </p>
             </section>
 
             {/* ---------- Right: form ---------- */}
@@ -93,19 +108,21 @@ const Login = () => {
                         </div>
                         <p className="font-semibold leading-tight">
                             Munshigonj Polytechnic
-                            <span className="block text-xs font-normal text-stone-500">Institute Chat</span>
+                            <span className="block text-xs font-normal text-stone-500">
+                                Institute Chat
+                            </span>
                         </p>
                     </div>
 
                     <h1 className="text-3xl font-bold text-emerald-950">Log in</h1>
-                    <p className="mt-1 text-stone-500">আপনার institute account দিয়ে ঢুকুন।</p>
+                    <p className="mt-1 text-stone-500">
+                        আপনার institute account দিয়ে ঢুকুন।
+                    </p>
 
                     <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
                         {/* Email */}
                         <div>
-                            <label className="mb-1.5 block text-sm font-medium">
-                                Email
-                            </label>
+                            <label className="mb-1.5 block text-sm font-medium">Email</label>
                             <input
                                 name="email"
                                 type="email"
@@ -117,8 +134,13 @@ const Login = () => {
                         {/* Password */}
                         <div>
                             <div className="mb-1.5 flex items-center justify-between">
-                                <label htmlFor="password" className="text-sm font-medium">Password</label>
-                                <a href="#" className="text-sm font-medium text-emerald-800 hover:underline">
+                                <label htmlFor="password" className="text-sm font-medium">
+                                    Password
+                                </label>
+                                <a
+                                    href="#"
+                                    className="text-sm font-medium text-emerald-800 hover:underline"
+                                >
                                     Password ভুলে গেছেন?
                                 </a>
                             </div>
@@ -135,13 +157,17 @@ const Login = () => {
                                     onClick={() => setShow(!show)}
                                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 text-stone-500 hover:bg-stone-100"
                                 >
-                                    {show ? <EyeOff size={18} /> : <Eye size={18} />} {/* ✅ আইকন যুক্ত করা হলো */}
+                                    {show ? <EyeOff size={18} /> : <Eye size={18} />}{" "}
+                                    {/* ✅ আইকন যুক্ত করা হলো */}
                                 </button>
                             </div>
                         </div>
 
                         {error && (
-                            <p role="alert" className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+                            <p
+                                role="alert"
+                                className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700"
+                            >
                                 {error}
                             </p>
                         )}
@@ -157,7 +183,10 @@ const Login = () => {
 
                     <p className="mt-8 text-center text-sm text-stone-500">
                         নতুন User?{" "}
-                        <NavLink to="/register" className="font-semibold text-emerald-800 hover:underline">
+                        <NavLink
+                            to="/register"
+                            className="font-semibold text-emerald-800 hover:underline"
+                        >
                             Account খুলুন
                         </NavLink>
                     </p>

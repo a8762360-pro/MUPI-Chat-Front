@@ -1,7 +1,10 @@
-import { User, Mail, Shield, CreditCard, Building2, BookOpen, Calendar, LogOut } from 'lucide-react';
-import React from 'react';
+import { User, Mail, Shield, CreditCard, Building2, BookOpen, LogOut } from 'lucide-react';
+// import React from 'react';
 import UseAuth from '../../../Hook/UseAuth';
 import { NavLink } from 'react-router';
+import { FiX } from 'react-icons/fi';
+import emptyPP from '../../../assets/emptyPP.webp'
+
 
 const Profile = () => {
     const { user, logOut } = UseAuth();
@@ -9,14 +12,14 @@ const Profile = () => {
     return (
         <div className="flex items-center h-10">
             {/* প্রোফাইল বাটন যা মডাল ওপেন করবে */}
-            <NavLink 
+            <NavLink
                 onClick={() => document.getElementById('user_profile_modal').showModal()}
-                className='flex items-center border border-amber-200 gap-2 text-black   rounded-full bg--600  transition hover:shadow-xl'
+                className='flex items-center border border-gray-400 gap-2 text-black   rounded-full bg--600  transition hover:shadow-xl'
             >
                 {user?.imageName || user?.photoURL ? (
-                    <img 
-                        src={user.imageName || user.photoURL} 
-                        alt="Profile" 
+                    <img
+                        src={user.imageName || emptyPP}
+                        alt="Profile"
                         className="w-8 h-8 rounded-full object-cover border border-white"
                     />
                 ) : (
@@ -24,21 +27,22 @@ const Profile = () => {
                 )}
             </NavLink>
 
+
             {/* DaisyUI Modal */}
             <dialog id="user_profile_modal" className="modal modal-bottom sm:modal-middle">
                 <div className="modal-box bg-white text-stone-800 p-6 rounded-2xl shadow-xl max-w-md w-full">
-                    
+
                     {/* Header with Avatar & Name */}
                     <div className="flex flex-col items-center border-b border-stone-200 pb-5">
                         <div className="relative">
-                            <img 
-                                src={user?.imageName || user?.photoURL || "https://img.icons8.com/color/96/user-male-circle--v1.png"} 
-                                alt="User Avatar" 
+                            <img
+                                src={user?.imageName || user?.photoURL || "https://img.icons8.com/color/96/user-male-circle--v1.png"}
+                                alt="User Avatar"
                                 className="w-24 h-24 rounded-full object-cover  shado"
                             />
                             <span className="absolute bottom-0 right-0 bg-emerald-500 w-5 h-5 rounded-full border-2 border-white" title="Active"></span>
                         </div>
-                        
+
                         <h3 className="text-2xl font-bold mt-3 text-stone-900 capitalize">
                             {user?.name || "User Name"}
                         </h3>
@@ -46,6 +50,12 @@ const Profile = () => {
                             <Mail size={14} /> {user?.email || "No email available"}
                         </p>
                     </div>
+                    <form method="dialog">
+                        <button className="btn border-none btn-sm btn-circle btn-ghost absolute right-4 top-4 text-slate-400 hover:bg-red-600 hover:text-white">
+                            <FiX size={18} />
+                        </button>
+                    </form>
+
 
                     {/* User Details Grid / List */}
                     <div className="py-5 space-y-3">
@@ -94,7 +104,7 @@ const Profile = () => {
 
                     {/* Modal Actions */}
                     <div className="modal-action flex justify-between items-center border-t border-stone-200 pt-4 mt-0">
-                        <button 
+                        <button
                             onClick={logOut}
                             className="btn bg-red-600 hover:bg-red-700 border-none btn-sm text-white flex items-center gap-1.5"
                         >
